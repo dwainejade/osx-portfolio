@@ -12,6 +12,10 @@ function App() {
     state.openWindows.sort((a, b) => a.zIndex - b.zIndex)
   );
 
+  // --- Add this log to inspect the state ---
+  console.log("App.tsx rendering - openWindows state:", openWindows);
+  // -----------------------------------------
+
   return (
     <div className={styles.desktop}>
       {/* Menu Bar */}
@@ -26,8 +30,8 @@ function App() {
             id={windowState.id}
             title={windowState.title}
             component={windowState.component}
-            initialPosition={windowState.position}
-            initialSize={windowState.size} // Pass size
+            position={windowState.position} // Pass position
+            size={windowState.size} // Pass size
             currentState={windowState.state} // Pass state
             zIndex={windowState.zIndex} // Pass z-index
           />
@@ -35,10 +39,7 @@ function App() {
       </AnimatePresence>
 
       {openWindows.length === 0 && (
-        <p className={styles.welcomeText}>
-          Hi, I'm Dwaine! This site is still a work in progress. Please click
-          around and have fun!
-        </p>
+        <p className={styles.welcomeText}>Welcome to my macOS Portfolio!</p>
       )}
 
       <Dock />
