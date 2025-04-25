@@ -22,8 +22,7 @@ const DockIcon: React.FC<DockIconProps> = ({
     // motion.div enables Framer Motion animations
     <motion.div
       className={styles.dockIcon}
-      whileHover={{ scale: 1.15 }} // Scale up slightly on hover
-      whileTap={{ scale: 0.95 }} // Scale down slightly when clicked
+      whileTap={{ filter: "brightness(.4)" }} // Scale down slightly when clicked
       onClick={onClick}
       title={label} // Tooltip on hover
     >

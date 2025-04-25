@@ -2,13 +2,7 @@
 import React from "react";
 import DockIcon from "./DockIcon";
 import styles from "./Dock.module.css";
-
-// Assume these are dummy functions for now
-// We will connect these to Zustand state later
-const handleIconClick = (appName: string) => {
-  console.log(`Clicked on ${appName}`);
-  // TODO: Implement logic to open window for appName using Zustand
-};
+import useWindowsStore from "../store/windowsStore";
 
 // Example array of dock items - replace with your actual portfolio items
 const dockItems = [
@@ -41,6 +35,13 @@ const dockItems = [
     type: "portfolio",
   },
   {
+    id: "settings",
+    src: "/assets/icons/settings.png",
+    alt: "Settings",
+    label: "Settings",
+    type: "system",
+  },
+  {
     id: "trash",
     src: "/assets/icons/trash_empty.png",
     alt: "Trash",
@@ -49,9 +50,16 @@ const dockItems = [
   },
 ];
 
-const openWindows = ["browser", "code"]; // Dummy array of open window IDs for demonstration
-
 const Dock: React.FC = () => {
+  const openWindow = useWindowsStore((state) => state.openWindow);
+  const openWindows = useWindowsStore((state) => state.openWindows);
+
+  const handleIconClick = (item: (typeof dockItems)[0]) => {
+    // Call the openWindow action. Don't pass a position here,
+    // so the store calculates the default centered/offset position.
+    openWindow(item.id, item.label, item.component);
+  };
+
   return (
     <div className={styles.dockContainer}>
       <div className={styles.dock}>
@@ -61,8 +69,8 @@ const Dock: React.FC = () => {
             src={item.src}
             alt={item.alt}
             label={item.label}
-            onClick={() => handleIconClick(item.id)}
-            isOpen={openWindows.includes(item.id)}
+            onClick={() => handleIconClick(item)}
+            isOpen={openWindows.some((window) => window.id === item.id)}
           />
         ))}
       </div>
