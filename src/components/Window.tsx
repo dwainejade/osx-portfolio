@@ -5,6 +5,7 @@ import {
   PanInfo,
   useMotionValue,
   AnimatePresence,
+  useDragControls,
 } from "framer-motion";
 import styles from "./Window.module.css";
 import useWindowsStore from "../store/windowsStore";
@@ -28,15 +29,25 @@ const Window: React.FC<WindowProps> = ({
   currentState,
   zIndex,
 }) => {
-  // Track whether this is the initial render
-  const [isInitialRender, setIsInitialRender] = useState(true);
+  // Track resize state
+  const [isResizing, setIsResizing] = useState(false);
+  const [resizeDirection, setResizeDirection] = useState("");
+  const [initialMousePosition, setInitialMousePosition] = useState({
+    x: 0,
+    y: 0,
+  });
+  const [initialWindowSize, setInitialWindowSize] = useState({
+    width: 0,
+    height: 0,
+  });
+  const [initialWindowPosition, setInitialWindowPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
-  // Set isInitialRender to false after first render
-  useEffect(() => {
-    if (isInitialRender) {
-      setIsInitialRender(false);
-    }
-  }, []);
+  // Minimum window size
+  const minWidth = 300;
+  const minHeight = 200;
   const closeWindow = useWindowsStore((state) => state.closeWindow);
   const updateWindowPosition = useWindowsStore(
     (state) => state.updateWindowPosition
@@ -48,6 +59,9 @@ const Window: React.FC<WindowProps> = ({
   const bringWindowToFront = useWindowsStore(
     (state) => state.bringWindowToFront
   );
+
+  // Initialize drag controls
+  const dragControls = useDragControls();
 
   // Track the previous state to determine animation behavior
   const [prevState, setPrevState] = useState<
@@ -79,6 +93,8 @@ const Window: React.FC<WindowProps> = ({
       setPrevState(currentState);
     }
   }, [currentState, prevState]);
+
+  const isInitialRender = true;
 
   // Handle initial animation
   const animateState = isInitialRender ? "opening" : currentState;
@@ -161,6 +177,7 @@ const Window: React.FC<WindowProps> = ({
         style={{
           overflowY: "auto",
           overflowX: "hidden",
+          color: "#333",
         }}
       >
         <h3>Content for: {title}</h3>
@@ -309,9 +326,20 @@ const Window: React.FC<WindowProps> = ({
       }}
       data-state={currentState}
       drag={isDraggable}
-      dragListener={false}
       dragMomentum={false}
-      dragConstraints={titleBarRef}
+      dragConstraints={{
+        left: 0,
+        top: 0,
+        right: window.innerWidth - 100,
+        bottom: window.innerHeight - 50,
+      }}
+      dragElastic={0}
+      dragControls={dragControls}
+      onDragStart={(e, info) => {
+        if (isDraggable && !isResizing) {
+          bringWindowToFront(id);
+        }
+      }}
       onDragEnd={handleDragEnd}
       onMouseDown={handleWindowClick}
     >
@@ -319,7 +347,8 @@ const Window: React.FC<WindowProps> = ({
         className={styles.titleBar}
         ref={titleBarRef}
         onMouseDown={(e) => {
-          if (isDraggable && e.target === titleBarRef.current) {
+          if (isDraggable && !isResizing) {
+            dragControls.start(e);
             windowRef.current?.setAttribute("data-dragging", "true");
           }
         }}
