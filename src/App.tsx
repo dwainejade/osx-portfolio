@@ -1,12 +1,15 @@
 // src/App.tsx
 import styles from "./App.module.css";
+import Dock from "./components/Dock"; // Import the Dock component
 
 function App() {
   return (
     <div className={styles.desktop}>
-      {/* This is where we will add other elements like the menu bar, dock, and windows */}
-      <p className={styles.welcomeText}>Welcome to my macOS Portfolio!</p>{" "}
-      {/* Optional: add some initial text */}
+      {/* Menu Bar will go here later */}
+      {/* Desktop Icons will go here later */}
+      {/* Optional: initial text */}
+      <Dock /> {/* Add the Dock component */}
+      {/* Windows will be rendered here later */}
     </div>
   );
 }
