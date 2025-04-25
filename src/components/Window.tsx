@@ -1,5 +1,4 @@
-// src/components/Window.tsx
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   motion,
   PanInfo,
@@ -40,6 +39,14 @@ const Window: React.FC<WindowProps> = ({
     (state) => state.bringWindowToFront
   );
 
+  // Store the pre-maximized position and size for the restore animation
+  const [preMaximizedState, setPreMaximizedState] = useState({
+    x: initialPosition.x,
+    y: initialPosition.y,
+    width: initialSize.width,
+    height: initialSize.height,
+  });
+
   const windowRef = useRef<HTMLDivElement>(null);
 
   const x = useMotionValue(initialPosition.x);
@@ -47,21 +54,37 @@ const Window: React.FC<WindowProps> = ({
   const width = useMotionValue(initialSize.width);
   const height = useMotionValue(initialSize.height);
 
-  React.useEffect(() => {
-    x.set(initialPosition.x);
-    y.set(initialPosition.y);
-    width.set(initialSize.width);
-    height.set(initialSize.height);
+  // Update motion values when props change
+  useEffect(() => {
+    if (currentState !== "maximized") {
+      x.set(initialPosition.x);
+      y.set(initialPosition.y);
+      width.set(initialSize.width);
+      height.set(initialSize.height);
+    }
   }, [
     initialPosition.x,
     initialPosition.y,
     initialSize.width,
     initialSize.height,
+    currentState,
     x,
     y,
     width,
     height,
   ]);
+
+  // Store current position and size before maximizing
+  useEffect(() => {
+    if (currentState === "normal") {
+      setPreMaximizedState({
+        x: x.get(),
+        y: y.get(),
+        width: width.get(),
+        height: height.get(),
+      });
+    }
+  }, [currentState, x, y, width, height]);
 
   const handleDragEnd = (
     event: MouseEvent | TouchEvent | PointerEvent,
@@ -73,6 +96,13 @@ const Window: React.FC<WindowProps> = ({
         y: y.get(),
       };
       updateWindowPosition(id, finalPosition);
+
+      // Update pre-maximized state after drag
+      setPreMaximizedState((prev) => ({
+        ...prev,
+        x: finalPosition.x,
+        y: finalPosition.y,
+      }));
     }
   };
 
@@ -80,13 +110,34 @@ const Window: React.FC<WindowProps> = ({
     bringWindowToFront(id);
   };
 
+  // Custom maximize handler to save position before maximizing
+  const handleMaximize = () => {
+    if (currentState !== "maximized") {
+      setPreMaximizedState({
+        x: x.get(),
+        y: y.get(),
+        width: width.get(),
+        height: height.get(),
+      });
+    }
+    maximizeWindow(id);
+  };
+
+  // Custom restore handler that uses the saved pre-maximized state
+  const handleRestore = () => {
+    setIsRestoring(true);
+    restoreWindow(id);
+
+    // Reset isRestoring after the animation completes
+    setTimeout(() => {
+      setIsRestoring(false);
+    }, 400); // A bit longer than animation duration to ensure it completes
+  };
+
   const WindowContent = () => {
     // TODO: Map 'component' string to actual React components
     return (
-      <div
-        className={styles.windowContent}
-        style={{ overflow: currentState === "maximized" ? "auto" : "auto" }}
-      >
+      <div className={styles.windowContent} style={{ overflow: "auto" }}>
         <h3>Content for: {title}</h3>
         <p>Current State: {currentState}</p>
         <p>
@@ -120,76 +171,130 @@ const Window: React.FC<WindowProps> = ({
     );
   };
 
-  const animationTarget = React.useMemo(() => {
-    const baseTarget = {
+  // Create animation variants for the different window states
+  const windowVariants = {
+    normal: {
+      x: initialPosition.x,
+      y: initialPosition.y,
+      width: initialSize.width,
+      height: initialSize.height,
       opacity: 1,
       scale: 1,
-      pointerEvents: "auto" as "auto" | "none", // Cast to union type
-    };
+      borderRadius: "8px",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        mass: 1,
+      },
+    },
+    minimized: {
+      x: window.innerWidth / 2 - 25, // Center at bottom
+      y: window.innerHeight - 10,
+      width: 50,
+      height: 30,
+      opacity: 0,
+      scale: 0.5,
+      borderRadius: "4px",
+      transition: {
+        duration: 0.3,
+        ease: [0.4, 0, 0.2, 1], // Material Design easing
+      },
+    },
+    maximizing: {
+      x: 0,
+      y: 0,
+      width: window.innerWidth,
+      height: window.innerHeight,
+      opacity: 1,
+      scale: 1,
+      borderRadius: "0px",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        mass: 1,
+      },
+    },
+    restoring: {
+      x: preMaximizedState.x,
+      y: preMaximizedState.y,
+      width: preMaximizedState.width,
+      height: preMaximizedState.height,
+      opacity: 1,
+      scale: 1,
+      borderRadius: "8px",
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 30,
+        mass: 1,
+      },
+    },
+  };
 
+  // Track when we're transitioning between states
+  const [isRestoring, setIsRestoring] = useState(false);
+
+  // Determine which variant to use based on current state
+  const currentVariant = React.useMemo(() => {
     switch (currentState) {
       case "normal":
-        return {
-          ...baseTarget,
-          x: initialPosition.x,
-          y: initialPosition.y,
-          width: initialSize.width,
-          height: initialSize.height,
-        };
+        return isRestoring ? "restoring" : "normal";
       case "minimized":
-        // Placeholder for minimize animation target
-        return {
-          ...baseTarget,
-          x: x.get(), // Stay at current x for now
-          y: window.innerHeight - 30, // Example: move near the bottom
-          width: 50, // Example: shrink to icon size
-          height: 30, // Example: shrink height
-          opacity: 0, // Fade out
-          scale: 0.5, // Shrink animation
-          pointerEvents: "none" as "auto" | "none", // Disable interactions
-        };
+        return "minimized";
       case "maximized":
-        // Target for maximized state
-        return {
-          ...baseTarget,
-          x: 0,
-          y: 0,
-          width: window.innerWidth,
-          height: window.innerHeight,
-          transition: {
-            // Define specific transitions for maximize
-            x: { duration: 0.3, ease: "easeOut" },
-            y: { duration: 0.3, ease: "easeOut" },
-            width: { duration: 0.3, ease: "easeOut" },
-            height: { duration: 0.3, ease: "easeOut" },
-            // Add other properties if needed
-          },
-        };
+        return "maximizing";
       default:
-        return {};
+        return "normal";
     }
-  }, [currentState, initialPosition, initialSize, x, y]);
+  }, [currentState, isRestoring]);
 
   const isDraggable = currentState === "normal";
   const greenButtonAction =
-    currentState === "maximized" ? restoreWindow : maximizeWindow;
+    currentState === "maximized" ? handleRestore : handleMaximize;
 
-  // Log the animation target whenever it changes
-  React.useEffect(() => {
-    console.log(
-      `Window ${id} - Animation Target for state ${currentState}:`,
-      animationTarget
-    );
-  }, [animationTarget, currentState, id]);
+  // macOS animation for the content - slight fade and scaling
+  const contentVariants = {
+    normal: {
+      opacity: 1,
+      scale: 1,
+      transition: {
+        duration: 0.2,
+      },
+    },
+    maximizing: {
+      opacity: [0.9, 1],
+      scale: [0.98, 1],
+      transition: {
+        duration: 0.3,
+        times: [0, 1],
+      },
+    },
+    restoring: {
+      opacity: [0.9, 1],
+      scale: [0.98, 1],
+      transition: {
+        duration: 0.3,
+        times: [0, 1],
+      },
+    },
+    minimized: {
+      opacity: 0,
+      scale: 0.95,
+      transition: {
+        duration: 0.2,
+      },
+    },
+  };
 
   return (
     <motion.div
       ref={windowRef}
       className={styles.window}
-      initial={{ opacity: 0, scale: 0.8 }} // Initial mount animation
-      animate={animationTarget} // Animate to the target based on state
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.2 }} // Default transition for exit, etc.
+      initial="normal"
+      animate={currentVariant}
+      variants={windowVariants}
       style={{
         x,
         y,
@@ -197,7 +302,14 @@ const Window: React.FC<WindowProps> = ({
         height,
         zIndex,
         pointerEvents: currentState === "minimized" ? "none" : "auto",
+        boxShadow:
+          currentState === "maximized"
+            ? "none"
+            : "0 10px 25px rgba(0,0,0,0.15)",
+        borderRadius: currentState === "maximized" ? 0 : "8px",
       }}
+      data-state={currentState}
+      data-restoring={isRestoring}
       drag={isDraggable}
       dragMomentum={false}
       onDragEnd={handleDragEnd}
@@ -218,7 +330,7 @@ const Window: React.FC<WindowProps> = ({
           {/* Maximize/Restore Button */}
           <div
             className={`${styles.controlButton} ${styles.maximizeButton}`}
-            onClick={() => greenButtonAction(id)}
+            onClick={greenButtonAction}
             style={{
               backgroundColor:
                 currentState === "maximized" ? "#00a03f" : "#00ca4e",
@@ -227,7 +339,14 @@ const Window: React.FC<WindowProps> = ({
         </div>
         <span className={styles.windowTitle}>{title}</span>
       </div>
-      <WindowContent />
+      <motion.div
+        variants={contentVariants}
+        initial="normal"
+        animate={currentVariant}
+        className={styles.contentWrapper}
+      >
+        <WindowContent />
+      </motion.div>
     </motion.div>
   );
 };

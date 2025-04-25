@@ -1,18 +1,16 @@
 /* src/components/Window.module.css */
 .window {
-  position: absolute; /* Keep absolute positioning */
+  position: absolute;
   background-color: #f0f0f0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  /* width and height are now controlled by motion values and style prop */
   min-width: 200px;
   min-height: 100px;
-  /* z-index is now controlled by the style prop */
-  /* resize: both; */
-  /* overflow: hidden; */ /* Overflow might be auto on content depending on state */
+  will-change: transform, width, height;
+  transform-origin: center center;
 }
 
 .titleBar {
@@ -22,10 +20,11 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
-  cursor: grab;
+  /* cursor: grab; */
   user-select: none;
   -webkit-user-select: none;
   flex-shrink: 0;
+  position: relative;
 }
 
 .windowControls {
@@ -37,30 +36,83 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  cursor: pointer;
+  /* cursor: pointer; */
   transition: background-color 0.1s ease;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
+/* Icons shown on hover of any button */
+.windowControls:hover .controlButton::before,
+.windowControls:hover .controlButton::after {
+  opacity: 0.7;
+}
+
+/* Close button (×) */
 .closeButton {
   background-color: #ff605c;
 }
 .closeButton:hover {
   background-color: #cc4f4c;
 }
+.closeButton::before,
+.closeButton::after {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.75);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.closeButton::before {
+  transform: rotate(45deg);
+}
+.closeButton::after {
+  transform: rotate(-45deg);
+}
 
+/* Minimize button (−) */
 .minimizeButton {
   background-color: #ffbd44;
 }
 .minimizeButton:hover {
   background-color: #cc9c37;
 }
+.minimizeButton::before {
+  content: "";
+  position: absolute;
+  width: 6px;
+  height: 1px;
+  background-color: rgba(0, 0, 0, 0.75);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
 
+/* Maximize button (+) */
 .maximizeButton {
   background-color: #00ca4e;
 }
 .maximizeButton:hover {
-  /* Hover effect for the maximize/restore button */
-  background-color: #00a03f; /* Darker green */
+  background-color: #00a03f;
+}
+.maximizeButton::before,
+.maximizeButton::after {
+  content: "";
+  position: absolute;
+  background-color: rgba(0, 0, 0, 0.75);
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+.maximizeButton::before {
+  width: 6px;
+  height: 1px;
+}
+.maximizeButton::after {
+  width: 1px;
+  height: 6px;
 }
 
 .windowTitle {
@@ -78,6 +130,65 @@
 .windowContent {
   flex-grow: 1;
   padding: 15px;
-  /* overflow: auto; */ /* Let style prop or JS manage based on state */
   background-color: #fefefe;
+}
+
+.contentWrapper {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Add subtle scaling effects for macOS feel */
+@keyframes scaleUp {
+  from {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes scaleDown {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+  to {
+    transform: scale(0.98);
+    opacity: 0.8;
+  }
+}
+
+/* State-specific styles */
+.window[data-state="maximized"] {
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.window[data-state="maximized"] .titleBar {
+  border-radius: 0;
+}
+
+/* Transition styles */
+.window.maximizing {
+  animation: scaleUp 0.3s forwards;
+}
+
+.window.restoring {
+  animation: scaleDown 0.3s forwards;
+}
+
+/* Add data attributes for state styling */
+.window[data-restoring="true"] {
+  will-change: transform, width, height, border-radius;
+}
+
+/* Ensure content transitions are smooth */
+.contentWrapper {
+  transition: transform 0.3s, opacity 0.3s;
+  will-change: transform, opacity;
 }
