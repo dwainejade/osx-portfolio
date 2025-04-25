@@ -1,0 +1,26 @@
+/* src/components/Dock.module.css */
+.dockContainer {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  padding: 10px 15px;
+  border-radius: 20px;
+
+  /* Basic background - replace with a more complex glassmorphism effect later */
+  background-color: rgba(40, 40, 40, 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.5);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+}
+
+.dock {
+  display: flex;
+  gap: 8px;
+}
