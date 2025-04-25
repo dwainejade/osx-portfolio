@@ -1,6 +1,6 @@
 // src/components/Window.tsx
 import React, { useRef } from "react";
-import { motion, PanInfo, useMotionValue } from "framer-motion"; // Import useMotionValue
+import { motion, PanInfo, useMotionValue } from "framer-motion";
 import styles from "./Window.module.css";
 import useWindowsStore from "../store/windowsStore";
 
@@ -28,9 +28,21 @@ const Window: React.FC<WindowProps> = ({
   const x = useMotionValue(initialPosition.x);
   const y = useMotionValue(initialPosition.y);
 
+  // Log the initial position prop and motion value initialization
+  console.log(
+    `Window ${id} - Rendered with initialPosition prop:`,
+    initialPosition
+  );
+  console.log(
+    `Window ${id} - useMotionValue initialized x: ${x.get()}, y: ${y.get()}`
+  );
+
   // Update motion values whenever initialPosition prop changes (e.g., state update)
-  // This ensures Framer Motion's internal x/y stays in sync with our state
   React.useEffect(() => {
+    console.log(
+      `Window ${id} - useEffect updating motion values to:`,
+      initialPosition
+    );
     x.set(initialPosition.x);
     y.set(initialPosition.y);
   }, [initialPosition.x, initialPosition.y, x, y]);
@@ -39,18 +51,20 @@ const Window: React.FC<WindowProps> = ({
     event: MouseEvent | TouchEvent | PointerEvent,
     info: PanInfo
   ) => {
-    // Get the final x and y values directly from Framer Motion's internal state
     const finalPosition = {
-      x: x.get(), // Use the current value of the motion value
-      y: y.get(), // Use the current value of the motion value
+      x: x.get(),
+      y: y.get(),
     };
 
     console.group(`Drag End for Window: ${id}`);
-    console.log("Initial Position (from state prop):", initialPosition);
+    console.log(
+      "Initial Position (from state prop AT DRAG END):",
+      initialPosition
+    );
     console.log("Drag Info Point (pointer position):", info.point);
     console.log("Drag Info Offset (total movement from start):", info.offset);
-    console.log("Framer Motion final x.get():", x.get()); // Log the value from the motion value
-    console.log("Framer Motion final y.get():", y.get()); // Log the value from the motion value
+    console.log("Framer Motion final x.get() AT DRAG END:", x.get());
+    console.log("Framer Motion final y.get() AT DRAG END:", y.get());
     console.log("Calculated Final Position (saved to state):", finalPosition);
 
     if (windowRef.current) {
@@ -62,7 +76,6 @@ const Window: React.FC<WindowProps> = ({
     }
     console.groupEnd();
 
-    // Update the window's position in the Zustand store using the values from motion values
     updateWindowPosition(id, finalPosition);
   };
 
@@ -80,17 +93,25 @@ const Window: React.FC<WindowProps> = ({
     <motion.div
       ref={windowRef}
       className={styles.window}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
+      initial={{
+        opacity: 0,
+        scale: 0.8,
+        x: initialPosition.x,
+        y: initialPosition.y,
+      }} // Use initialPosition prop directly in initial animation
+      animate={{
+        opacity: 1,
+        scale: 1,
+        x: initialPosition.x,
+        y: initialPosition.y,
+      }} // Use initialPosition prop directly in animate
       exit={{ opacity: 0, scale: 0.8 }}
       transition={{ duration: 0.2 }}
-      // Pass motion values directly to control position
+      // Use motion values here
       x={x}
       y={y}
       drag
       dragMomentum={false}
-      // Constraints should ideally work relative to the origin (0,0) when using x/y
-
       onDragEnd={handleDragEnd}
     >
       <div className={styles.titleBar}>

@@ -35,6 +35,13 @@ const dockItems = [
     type: "portfolio",
   },
   {
+    id: "settings",
+    src: "/assets/icons/settings.png",
+    alt: "Settings",
+    label: "Settings",
+    type: "system",
+  },
+  {
     id: "trash",
     src: "/assets/icons/trash_empty.png",
     alt: "Trash",
@@ -48,10 +55,9 @@ const Dock: React.FC = () => {
   const openWindows = useWindowsStore((state) => state.openWindows);
 
   const handleIconClick = (item: (typeof dockItems)[0]) => {
-    openWindow(item.id, item.label, item.component, {
-      x: 150 + Math.random() * 50,
-      y: 150 + Math.random() * 50,
-    });
+    // Call the openWindow action. Don't pass a position here,
+    // so the store calculates the default centered/offset position.
+    openWindow(item.id, item.label, item.component);
   };
 
   return (
