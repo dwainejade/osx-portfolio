@@ -1,0 +1,27 @@
+/* src/App.module.css */
+.desktop {
+  width: 100vw; /* Viewport width */
+  height: 100vh; /* Viewport height */
+  overflow: hidden; /* Prevent scrolling */
+  position: relative; /* Needed for absolute positioning of children */
+
+  /* Example background - replace with your desired macOS-like background */
+  background-image: url("/assets/wallpapers/wallpaper-1.png"); /* Use a public folder path */
+  background-size: cover; /* Cover the entire container */
+  background-position: center; /* Center the background image */
+  background-repeat: no-repeat; /* Do not repeat the image */
+
+  /* Optional: Fallback background color */
+  background-color: #1e1e1e; /* Dark gray */
+
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; /* macOS-like font stack */
+  color: white; /* Default text color */
+}
+
+.welcomeText {
+  text-align: center;
+  margin-top: 50px;
+  font-size: 2em;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5); /* Optional shadow for readability */
+}
