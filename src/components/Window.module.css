@@ -1,0 +1,83 @@
+/* src/components/Window.module.css */
+.window {
+  position: absolute;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  width: 600px;
+  height: 400px;
+  min-width: 200px;
+  min-height: 100px;
+  z-index: 50;
+  /* resize: both; */ /* Removed native resize as we'll replace it later */
+  overflow: hidden; /* Keep content within bounds */
+}
+
+.titleBar {
+  height: 24px;
+  background-color: #e0e0e0;
+  border-bottom: 1px solid #d0d0d0;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+  flex-shrink: 0; /* Prevent title bar from shrinking */
+}
+
+.windowControls {
+  display: flex;
+  gap: 6px;
+}
+
+.controlButton {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.closeButton {
+  background-color: #ff605c;
+}
+.closeButton:hover {
+  background-color: #cc4f4c;
+}
+
+.minimizeButton {
+  background-color: #ffbd44;
+}
+.minimizeButton:hover {
+  background-color: #cc9c37;
+}
+
+.maximizeButton {
+  background-color: #00ca4e;
+}
+.maximizeButton:hover {
+  background-color: #00a03f;
+}
+
+.windowTitle {
+  flex-grow: 1;
+  text-align: center;
+  font-size: 0.9em;
+  color: #444;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-left: 8px;
+  margin-right: calc(12px * 3 + 6px * 2 + 8px);
+}
+
+.windowContent {
+  flex-grow: 1;
+  padding: 15px;
+  overflow: auto; /* Enable scrolling for content area */
+  background-color: #fefefe; /* Lighter background for content */
+}
