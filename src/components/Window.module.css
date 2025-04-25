@@ -1,19 +1,18 @@
 /* src/components/Window.module.css */
 .window {
-  position: absolute;
+  position: absolute; /* Keep absolute positioning */
   background-color: #f0f0f0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  width: 600px;
-  height: 400px;
+  /* width and height are now controlled by motion values and style prop */
   min-width: 200px;
   min-height: 100px;
-  z-index: 50;
-  /* resize: both; */ /* Removed native resize as we'll replace it later */
-  overflow: hidden; /* Keep content within bounds */
+  /* z-index is now controlled by the style prop */
+  /* resize: both; */
+  /* overflow: hidden; */ /* Overflow might be auto on content depending on state */
 }
 
 .titleBar {
@@ -26,7 +25,7 @@
   cursor: grab;
   user-select: none;
   -webkit-user-select: none;
-  flex-shrink: 0; /* Prevent title bar from shrinking */
+  flex-shrink: 0;
 }
 
 .windowControls {
@@ -60,7 +59,8 @@
   background-color: #00ca4e;
 }
 .maximizeButton:hover {
-  background-color: #00a03f;
+  /* Hover effect for the maximize/restore button */
+  background-color: #00a03f; /* Darker green */
 }
 
 .windowTitle {
@@ -78,6 +78,6 @@
 .windowContent {
   flex-grow: 1;
   padding: 15px;
-  overflow: auto; /* Enable scrolling for content area */
-  background-color: #fefefe; /* Lighter background for content */
+  /* overflow: auto; */ /* Let style prop or JS manage based on state */
+  background-color: #fefefe;
 }
