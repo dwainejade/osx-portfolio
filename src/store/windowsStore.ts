@@ -1,53 +1,56 @@
-// src/store/windowsStore.ts
 import { create } from "zustand";
 
-// Define the possible states of a window
-type WindowDisplayState = "normal" | "minimized" | "maximized";
+// Assuming these constants and types exist elsewhere
+const DEFAULT_WINDOW_WIDTH = 600;
+const DEFAULT_WINDOW_HEIGHT = 400;
+const OFFSET_INCREMENT = 30;
 
-interface WindowState {
-  id: string;
-  title: string;
-  component: string;
-  position: { x: number; y: number }; // location on screen
-  size: { width: number; height: number };
-  state: WindowDisplayState;
-  prevPosition?: { x: number; y: number };
-  prevSize?: { width: number; height: number }; // size before maximize
-  zIndex: number; // for layering
+interface WindowPosition {
+  x: number;
+  y: number;
 }
 
-interface WindowsState {
+interface WindowSize {
+  width: number;
+  height: number;
+}
+
+export type WindowStateValue = "normal" | "minimized" | "maximized";
+
+export interface WindowState {
+  id: string;
+  title: string;
+  component: string; // Assuming component is a string identifier
+  position: WindowPosition;
+  size: WindowSize;
+  state: WindowStateValue;
+  zIndex: number;
+  // Optional: Store pre-minimized/maximized state if needed for more complex restore
+  // preMinimizedState?: { position: WindowPosition, size: WindowSize };
+  // preMaximizedState?: { position: WindowPosition, size: WindowSize };
+}
+
+interface WindowsStoreState {
   openWindows: WindowState[];
   nextDefaultPositionOffset: number;
-  lastZIndex: number; // to increment z-index
-
+  lastZIndex: number;
   openWindow: (
     id: string,
     title: string,
     component: string,
-    initialPosition?: { x: number; y: number },
-    initialSize?: { width: number; height: number }
+    userProvidedPosition?: WindowPosition,
+    userProvidedSize?: WindowSize
   ) => void;
   closeWindow: (id: string) => void;
-  updateWindowPosition: (
-    id: string,
-    position: { x: number; y: number }
-  ) => void;
-  updateWindowSize: (
-    id: string,
-    size: { width: number; height: number }
-  ) => void; // Action to update size
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
-  restoreWindow: (id: string) => void;
-  bringWindowToFront: (id: string) => void; // Action for z-index
+  restoreWindow: (id: string) => void; // Ensure this exists
+  bringWindowToFront: (id: string) => void; // Ensure this exists
+  updateWindowPosition: (id: string, position: WindowPosition) => void; // Assuming exists
+  updateWindowSize: (id: string, size: WindowSize) => void; // Assuming exists
 }
 
-const DEFAULT_WINDOW_WIDTH = 600;
-const DEFAULT_WINDOW_HEIGHT = 400;
-const OFFSET_INCREMENT = 20;
-
-const useWindowsStore = create<WindowsState>((set, get) => ({
+const useWindowsStore = create<WindowsStoreState>((set, get) => ({
   openWindows: [],
   nextDefaultPositionOffset: 0,
   lastZIndex: 0, // Initialize z-index counter
@@ -61,14 +64,28 @@ const useWindowsStore = create<WindowsState>((set, get) => ({
   ) => {
     const { openWindows, nextDefaultPositionOffset, lastZIndex } = get();
 
-    // Prevent opening if already open, and bring to front instead
     const existingWindow = openWindows.find((window) => window.id === id);
-    if (existingWindow) {
-      get().bringWindowToFront(id); // Bring existing to front
-      console.log(`Window ${id} is already open, bringing to front.`);
-      return;
-    }
 
+    // --- MODIFICATION START ---
+    if (existingWindow) {
+      // Check if the existing window is minimized
+      if (existingWindow.state === "minimized") {
+        // Restore the minimized window instead of just bringing to front
+        console.log(`Window ${id} is minimized, restoring...`);
+        // Call the dedicated restore function (which should also handle zIndex)
+        get().restoreWindow(id);
+      } else {
+        // If it exists but is normal or maximized, just bring it to the front
+        console.log(
+          `Window ${id} is already open (${existingWindow.state}), bringing to front.`
+        );
+        get().bringWindowToFront(id);
+      }
+      return; // Stop execution, don't create a new window
+    }
+    // --- MODIFICATION END ---
+
+    // --- Logic for creating a NEW window (remains the same) ---
     let windowPosition = userProvidedPosition;
     const windowSize = userProvidedSize || {
       width: DEFAULT_WINDOW_WIDTH,
@@ -76,17 +93,24 @@ const useWindowsStore = create<WindowsState>((set, get) => ({
     };
 
     if (!windowPosition) {
-      const centerX = window.innerWidth / 2 - windowSize.width / 2;
-      const centerY = window.innerHeight / 2 - windowSize.height / 2;
+      // Calculate centered position with offset
+      const safeInnerWidth =
+        typeof window !== "undefined" ? window.innerWidth : 1024; // Fallback for SSR
+      const safeInnerHeight =
+        typeof window !== "undefined" ? window.innerHeight : 768; // Fallback for SSR
+      const centerX = safeInnerWidth / 2 - windowSize.width / 2;
+      const centerY = safeInnerHeight / 2 - windowSize.height / 2;
 
       windowPosition = {
         x: centerX + nextDefaultPositionOffset,
         y: centerY + nextDefaultPositionOffset,
       };
 
+      // Update offset for the next window
       set((state) => ({
         nextDefaultPositionOffset:
-          state.nextDefaultPositionOffset + OFFSET_INCREMENT,
+          (state.nextDefaultPositionOffset + OFFSET_INCREMENT) %
+          (5 * OFFSET_INCREMENT), // Cycle offset
       }));
     }
 
@@ -99,9 +123,9 @@ const useWindowsStore = create<WindowsState>((set, get) => ({
       title,
       component,
       position: windowPosition!,
-      size: windowSize, // Save initial size
+      size: windowSize,
       state: "normal", // Initial state is normal
-      zIndex: newZIndex, // Assign z-index
+      zIndex: newZIndex, // Assign the highest z-index
     };
 
     set((state) => ({
@@ -111,107 +135,98 @@ const useWindowsStore = create<WindowsState>((set, get) => ({
 
   closeWindow: (id) => {
     set((state) => ({
-      openWindows: state.openWindows.filter((window) => window.id !== id),
+      openWindows: state.openWindows.filter((win) => win.id !== id),
     }));
-    // Reset offset if all windows are closed
+    // Optional: Reset offset if no windows are open?
     if (get().openWindows.length === 1) {
+      // Checking length *after* filter means 0 left
       set({ nextDefaultPositionOffset: 0 });
     }
   },
 
+  minimizeWindow: (id) => {
+    set((state) => ({
+      openWindows: state.openWindows.map((win) =>
+        win.id === id ? { ...win, state: "minimized" } : win
+      ),
+      // Note: Minimizing usually doesn't change z-index relative to others,
+      // but bringing another window to front later will.
+    }));
+  },
+
+  maximizeWindow: (id) => {
+    // Store pre-maximize state if needed here before changing state
+    const { lastZIndex } = get();
+    const newZIndex = lastZIndex + 1;
+    set((state) => ({
+      openWindows: state.openWindows.map((win) =>
+        win.id === id
+          ? {
+              ...win,
+              state: "maximized",
+              zIndex: newZIndex, // Bring to front when maximizing
+            }
+          : win
+      ),
+      lastZIndex: newZIndex,
+    }));
+  },
+
+  // --- RESTORE FUNCTION (Crucial for the logic) ---
+  restoreWindow: (id) => {
+    const { lastZIndex } = get();
+    const newZIndex = lastZIndex + 1; // Get the next highest z-index
+    set((state) => ({
+      openWindows: state.openWindows.map((win) => {
+        if (win.id === id) {
+          // Restore to 'normal' state and bring to front
+          // It assumes win.position and win.size hold the correct values
+          // from the last time it was 'normal'.
+          return {
+            ...win,
+            state: "normal",
+            zIndex: newZIndex, // Assign highest z-index
+          };
+        }
+        return win;
+      }),
+      lastZIndex: newZIndex, // Update the highest z-index marker
+    }));
+  },
+
+  // --- BRING TO FRONT FUNCTION (Used by openWindow and others) ---
+  bringWindowToFront: (id) => {
+    // Only bring to front if it's not already the top-most window
+    const currentWindow = get().openWindows.find((win) => win.id === id);
+    const { lastZIndex } = get();
+
+    if (currentWindow && currentWindow.zIndex <= lastZIndex) {
+      const newZIndex = lastZIndex + 1;
+      set((state) => ({
+        openWindows: state.openWindows.map((win) =>
+          win.id === id ? { ...win, zIndex: newZIndex } : win
+        ),
+        lastZIndex: newZIndex,
+      }));
+    }
+  },
+
+  // --- UPDATE POSITION/SIZE (Needed by react-rnd handlers) ---
   updateWindowPosition: (id, position) => {
     set((state) => ({
-      openWindows: state.openWindows.map((window) =>
-        window.id === id ? { ...window, position } : window
+      openWindows: state.openWindows.map((win) =>
+        win.id === id ? { ...win, position } : win
       ),
     }));
   },
 
   updateWindowSize: (id, size) => {
     set((state) => ({
-      openWindows: state.openWindows.map((window) =>
-        window.id === id ? { ...window, size } : window
+      openWindows: state.openWindows.map((win) =>
+        win.id === id ? { ...win, size } : win
       ),
     }));
   },
-
-  minimizeWindow: (id) => {
-    // TODO: Implement animation logic in component, just update state here
-    set((state) => ({
-      openWindows: state.openWindows.map((window) =>
-        window.id === id ? { ...window, state: "minimized" } : window
-      ),
-    }));
-    // Optional: Send to back when minimized?
-    // get().sendWindowToBack(id);
-  },
-
-  maximizeWindow: (id) => {
-    set((state) => ({
-      openWindows: state.openWindows.map((window) => {
-        if (window.id === id) {
-          // Store current size/position before maximizing
-          return {
-            ...window,
-            state: "maximized",
-            prevPosition: window.position,
-            prevSize: window.size,
-            position: { x: 0, y: 0 }, // Maximize to top-left (will cover entire desktop area)
-            size: { width: window.innerWidth, height: window.innerHeight }, // Maximize to viewport size
-          };
-        }
-        return window;
-      }),
-    }));
-    get().bringWindowToFront(id); // Bring maximized window to front
-  },
-
-  restoreWindow: (id) => {
-    set((state) => ({
-      openWindows: state.openWindows.map((window) => {
-        if (
-          window.id === id &&
-          window.state === "maximized" &&
-          window.prevPosition &&
-          window.prevSize
-        ) {
-          // Restore to previous size/position
-          return {
-            ...window,
-            state: "normal",
-            position: window.prevPosition,
-            size: window.prevSize,
-            prevPosition: undefined, // Clear previous state
-            prevSize: undefined,
-          };
-        }
-        return window;
-      }),
-    }));
-    get().bringWindowToFront(id); // Bring restored window to front
-  },
-
-  bringWindowToFront: (id) => {
-    const { openWindows, lastZIndex } = get();
-    const windowToFront = openWindows.find((window) => window.id === id);
-
-    if (!windowToFront || windowToFront.zIndex === lastZIndex) {
-      return; // Already front or doesn't exist
-    }
-
-    const newZIndex = lastZIndex + 1;
-    set({ lastZIndex: newZIndex });
-
-    set((state) => ({
-      openWindows: state.openWindows
-        .map((window) =>
-          window.id === id ? { ...window, zIndex: newZIndex } : window
-        )
-        .sort((a, b) => a.zIndex - b.zIndex), // Keep the array sorted by z-index
-    }));
-  },
-  // Optional: Action to send a window to the back (e.g., when minimized)
-  // sendWindowToBack: (id) => { ... }
 }));
 
 export default useWindowsStore;

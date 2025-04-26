@@ -233,7 +233,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
           overflowY: "auto",
           overflowX: "hidden",
           height: "calc(100% - 30px)", // Adjust based on title bar height
-          color: "#333", // Example text color
+          color: "#333",
         }}
       >
         {children}
