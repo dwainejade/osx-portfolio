@@ -1,4 +1,3 @@
-// src/components/WindowContainer.tsx
 import React, { useRef, useEffect } from "react";
 import { Rnd, Props as RndProps } from "react-rnd"; // Import Rnd and its types
 import styles from "./Window.module.css";
@@ -129,10 +128,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   };
 
   const handleRestore = () => {
-    // Restore uses the state stored in the store via restoreWindow
     restoreWindow(id);
-    // Zustand should provide the preMaximizedStateRef values via props
-    // Ensure restoreWindow in the store sets position/size correctly
   };
 
   // --- Rnd Configuration based on State ---

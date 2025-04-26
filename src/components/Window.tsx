@@ -1,4 +1,3 @@
-// src/components/Window.tsx
 import React from "react";
 import WindowContainer from "./WindowContainer";
 import styles from "./Window.module.css";

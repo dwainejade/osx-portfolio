@@ -1,4 +1,3 @@
-// src/components/Dock.tsx
 import React from "react";
 import DockIcon from "./DockIcon";
 import styles from "./Dock.module.css";

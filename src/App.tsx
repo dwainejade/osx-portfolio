@@ -1,4 +1,3 @@
-// src/App.tsx
 import { AnimatePresence } from "framer-motion";
 import styles from "./App.module.css";
 import Dock from "./components/Dock";
