@@ -174,6 +174,19 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   const greenButtonAction =
     currentState === "maximized" ? handleRestore : handleMaximize;
 
+  const handleMouseDownCapture = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Check if the click target is a control button or is inside one
+    const targetElement = e.target as HTMLElement;
+    if (targetElement.closest(`.${styles.controlButton}`)) {
+      // If the click started on a control button, do nothing here.
+      // Let the button's own event handlers manage the interaction.
+      return;
+    }
+
+    // If the click was anywhere else on the window, bring it to the front.
+    bringWindowToFront(id);
+  };
+
   // Render the Window using Rnd
   return (
     <Rnd
@@ -186,11 +199,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
             : "0 10px 25px rgba(0,0,0,0.15)",
       }} // Apply zIndex and conditional shadow
       className={styles.window} // Use existing CSS module class for basic frame styling
-      onMouseDownCapture={(e) => {
-        // Use onMouseDownCapture to ensure bringWindowToFront happens reliably
-        // before Rnd's internal handlers potentially stop propagation.
-        bringWindowToFront(id);
-      }}
+      onMouseDownCapture={handleMouseDownCapture}
     >
       {/* Title Bar - Add the drag handle class here */}
       <div
