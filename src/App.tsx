@@ -24,6 +24,7 @@ function App() {
 
       <AnimatePresence>
         {/* Map over open windows and render a Window component for each */}
+        {/* Filter out minimized windows from being rendered */}
         {openWindows.map((windowState) => (
           <Window
             key={windowState.id}

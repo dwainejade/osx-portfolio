@@ -8,18 +8,18 @@ interface WindowState {
   id: string;
   title: string;
   component: string;
-  position: { x: number; y: number };
-  size: { width: number; height: number }; // Add size to state
-  state: WindowDisplayState; // Add display state
-  prevPosition?: { x: number; y: number }; // Store position before maximize
-  prevSize?: { width: number; height: number }; // Store size before maximize
-  zIndex: number; // Add z-index for layering (MVP Extra Feature)
+  position: { x: number; y: number }; // location on screen
+  size: { width: number; height: number };
+  state: WindowDisplayState;
+  prevPosition?: { x: number; y: number };
+  prevSize?: { width: number; height: number }; // size before maximize
+  zIndex: number; // for layering
 }
 
 interface WindowsState {
   openWindows: WindowState[];
   nextDefaultPositionOffset: number;
-  lastZIndex: number; // To manage z-index
+  lastZIndex: number; // to increment z-index
 
   openWindow: (
     id: string,
