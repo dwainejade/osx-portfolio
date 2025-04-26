@@ -145,7 +145,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   };
 
   if (currentState === "maximized") {
-    // Get viewport dimensions (consider potential scrollbars if bounds="window")
+    // Get viewport dimensions
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
 
@@ -157,11 +157,10 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
       disableDragging: true,
     };
   } else if (currentState === "minimized") {
-    // For minimized, we simply don't render Rnd
-    return null; // Or render a small placeholder elsewhere (e.g., in a dock)
+    // For minimized, we don't render Rnd
+    return null;
   } else {
     // Ensure 'normal' state uses the potentially restored values if coming from maximized
-    // This relies on the props `position` and `size` being correctly updated by the store
     rndConfig = {
       ...rndConfig,
       size: { width: size.width, height: size.height },
@@ -178,8 +177,6 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     // Check if the click target is a control button or is inside one
     const targetElement = e.target as HTMLElement;
     if (targetElement.closest(`.${styles.controlButton}`)) {
-      // If the click started on a control button, do nothing here.
-      // Let the button's own event handlers manage the interaction.
       return;
     }
 
