@@ -1,14 +1,13 @@
-// src/components/DockIcon.tsx
 import React from "react";
 import { motion } from "framer-motion";
 import styles from "./DockIcon.module.css";
 
 interface DockIconProps {
   src: string; // Path to the icon image
-  alt: string; // Alt text for accessibility
+  alt: string; // Alt text
   label: string; // Name of the application/portfolio item
-  onClick: () => void; // Function to call when the icon is clicked
-  isOpen?: boolean; // Optional: indicates if the corresponding window is open
+  onClick: () => void;
+  isOpen?: boolean;
 }
 
 const DockIcon: React.FC<DockIconProps> = ({
@@ -19,16 +18,14 @@ const DockIcon: React.FC<DockIconProps> = ({
   isOpen,
 }) => {
   return (
-    // motion.div enables Framer Motion animations
     <motion.div
       className={styles.dockIcon}
-      whileTap={{ filter: "brightness(.4)" }} // Scale down slightly when clicked
+      whileTap={{ filter: "brightness(.4)" }}
       onClick={onClick}
-      title={label} // Tooltip on hover
+      title={label} // Tooltip
     >
       <img src={src} alt={alt} className={styles.iconImage} />
       {isOpen && <div className={styles.indicatorDot}></div>}{" "}
-      {/* Conditional indicator dot */}
     </motion.div>
   );
 };
