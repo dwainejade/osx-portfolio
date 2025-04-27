@@ -1,17 +1,18 @@
-// src/components/Desktop.tsx
+// In src/components/Desktop.tsx
 import React, { useState } from "react";
 import useFileSystemStore from "../store/fileSystemStore";
 import useWindowsStore from "../store/windowsStore";
 import styles from "./Desktop.module.css";
+import { FileSystemNode, isFolder } from "../store/fileSystemTypes";
 
 const Desktop: React.FC = () => {
-  const { items } = useFileSystemStore();
+  const { nodes } = useFileSystemStore(); // Use 'nodes' instead of 'items'
   const openWindow = useWindowsStore((state) => state.openWindow);
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
 
   // Find all items that are on the desktop (parentId is null)
-  const desktopItems = Object.values(items).filter(
-    (item) => item.parentId === null
+  const desktopItems = Object.values(nodes).filter(
+    (item: FileSystemNode) => item.parentId === null
   );
 
   const handleItemClick = (e: React.MouseEvent, id: string) => {
@@ -20,10 +21,10 @@ const Desktop: React.FC = () => {
   };
 
   const handleItemDoubleClick = (id: string) => {
-    const item = items[id];
+    const item = nodes[id];
     if (!item) return;
 
-    if (item.type === "folder") {
+    if (isFolder(item)) {
       // Open a window with the folder contents
       openWindow(
         `folder-${id}`,
@@ -50,7 +51,7 @@ const Desktop: React.FC = () => {
 
   return (
     <div className={styles.desktop} onClick={handleDesktopClick}>
-      {desktopItems.map((item) => (
+      {desktopItems.map((item: FileSystemNode) => (
         <div
           key={item.id}
           className={`${styles.desktopItem} ${
@@ -60,7 +61,7 @@ const Desktop: React.FC = () => {
           onDoubleClick={() => handleItemDoubleClick(item.id)}
         >
           <div className={styles.itemIcon}>
-            <img src={item.metadata.icon} alt={item.type} />
+            <img src={item.icon} alt={item.type} />
           </div>
           <div className={styles.itemName}>{item.name}</div>
         </div>
