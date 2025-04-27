@@ -1,8 +1,9 @@
 // src/components/WindowContainer.tsx
-import React, { useRef, useEffect } from "react";
-import { Rnd, Props as RndProps } from "react-rnd"; // Import Rnd and its types
+import React, { useRef, useEffect, useState } from "react";
+import { Rnd, Props as RndProps } from "react-rnd";
 import styles from "./Window.module.css";
 import useWindowsStore from "../store/windowsStore";
+import useWindowResize from "../hooks/useWindowResize";
 
 // Define a specific class name for the drag handle
 const DRAG_HANDLE_CLASS = "window-drag-handle";
@@ -20,8 +21,8 @@ interface WindowContainerProps {
 const WindowContainer: React.FC<WindowContainerProps> = ({
   id,
   title,
-  position = { x: 100, y: 100 }, // Provide default initial position
-  size = { width: 600, height: 400 }, // Provide default initial size
+  position = { x: 100, y: 100 },
+  size = { width: 600, height: 400 },
   currentState,
   zIndex,
   children,
@@ -38,6 +39,9 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     (state) => state.bringWindowToFront
   );
 
+  // Get current window size from our custom hook
+  const windowSize = useWindowResize();
+
   // Store pre-maximized state (position and size)
   const preMaximizedStateRef = useRef({
     x: position.x,
@@ -46,12 +50,14 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     height: size.height,
   });
 
-  // Keep track if the component has mounted to avoid setting preMax state incorrectly on first render
+  // Keep track if the component has mounted
   const hasMounted = useRef(false);
 
-  // Update pre-maximized state only when position/size changes while in normal state
+  // Flag to track if we're currently dragging or resizing
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  // Update pre-maximized state when in normal state
   useEffect(() => {
-    // Only update after mount and when in normal state
     if (hasMounted.current && currentState === "normal") {
       preMaximizedStateRef.current = {
         x: position.x,
@@ -60,7 +66,6 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
         height: size.height,
       };
     } else if (!hasMounted.current) {
-      // On first mount, ensure ref matches initial props
       preMaximizedStateRef.current = {
         x: position.x,
         y: position.y,
@@ -73,18 +78,26 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
 
   // --- Event Handlers for Rnd ---
 
+  const handleDragStart = () => {
+    setIsInteracting(true);
+    bringWindowToFront(id);
+  };
+
   const handleDragStop: RndProps["onDragStop"] = (e, d) => {
-    // Avoid updating position if it resulted from a click without dragging
+    setIsInteracting(false);
+
     if (position.x !== d.x || position.y !== d.y) {
       if (currentState === "normal") {
         const newPosition = { x: d.x, y: d.y };
         updateWindowPosition(id, newPosition);
-        // Also update ref here as dragging changes position
         preMaximizedStateRef.current.x = newPosition.x;
         preMaximizedStateRef.current.y = newPosition.y;
       }
     }
-    // Always bring to front on interaction end if needed
+  };
+
+  const handleResizeStart = () => {
+    setIsInteracting(true);
     bringWindowToFront(id);
   };
 
@@ -93,30 +106,27 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     direction,
     ref,
     delta,
-    pos // `pos` gives the final position after resize
+    pos
   ) => {
+    setIsInteracting(false);
+
     if (currentState === "normal") {
-      // Parse width/height which might have "px"
       const newWidth = parseInt(ref.style.width, 10);
       const newHeight = parseInt(ref.style.height, 10);
       const newSize = { width: newWidth, height: newHeight };
       const newPosition = { x: pos.x, y: pos.y };
 
       updateWindowSize(id, newSize);
-      // Update position as well, as resizing from top/left changes position
       updateWindowPosition(id, newPosition);
 
-      // Also update ref here as resizing changes size/position
       preMaximizedStateRef.current = { ...newPosition, ...newSize };
     }
-    // Always bring to front on interaction end
-    bringWindowToFront(id);
   };
 
   // --- Window Actions ---
 
   const handleMaximize = () => {
-    // Capture current state *before* maximizing if it's normal
+    // Save current state before maximizing
     if (currentState === "normal") {
       preMaximizedStateRef.current = {
         x: position.x,
@@ -125,7 +135,9 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
         height: size.height,
       };
     }
-    maximizeWindow(id); // This should update the state, triggering re-render
+
+    // Apply the state change immediately
+    maximizeWindow(id);
   };
 
   const handleRestore = () => {
@@ -138,82 +150,72 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     position: { x: position.x, y: position.y },
     minWidth: 300,
     minHeight: 200,
-    dragHandleClassName: DRAG_HANDLE_CLASS, // Use the defined class for dragging
+    dragHandleClassName: DRAG_HANDLE_CLASS,
+    onDragStart: handleDragStart,
     onDragStop: handleDragStop,
+    onResizeStart: handleResizeStart,
     onResizeStop: handleResizeStop,
     enableResizing: true,
     disableDragging: false,
+    dragGrid: [1, 1], // Fine-grained grid for smoother dragging
+    resizeGrid: [1, 1], // Fine-grained grid for smoother resizing
   };
 
   if (currentState === "maximized") {
-    // Get viewport dimensions
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-
     rndConfig = {
       ...rndConfig,
-      size: { width: viewportWidth, height: viewportHeight },
+      size: { width: windowSize.width, height: windowSize.height },
       position: { x: 0, y: 0 },
       enableResizing: false,
       disableDragging: true,
     };
   } else if (currentState === "minimized") {
-    // For minimized, we don't render Rnd
     return null;
-  } else {
-    // Ensure 'normal' state uses the potentially restored values if coming from maximized
-    rndConfig = {
-      ...rndConfig,
-      size: { width: size.width, height: size.height },
-      position: { x: position.x, y: position.y },
-      enableResizing: true,
-      disableDragging: false,
-    };
   }
 
   const greenButtonAction =
     currentState === "maximized" ? handleRestore : handleMaximize;
 
   const handleMouseDownCapture = (e: React.MouseEvent<HTMLDivElement>) => {
-    // Check if the click target is a control button or is inside one
     const targetElement = e.target as HTMLElement;
     if (targetElement.closest(`.${styles.controlButton}`)) {
       return;
     }
-
-    // If the click was anywhere else on the window, bring it to the front.
     bringWindowToFront(id);
   };
 
-  // Render the Window using Rnd
+  // Only apply transitions when not interacting with the window
+  const containerStyle = {
+    zIndex,
+    boxShadow:
+      currentState === "maximized" ? "none" : "0 10px 25px rgba(0,0,0,0.15)",
+    ...(isInteracting
+      ? {}
+      : { transition: "all 300ms cubic-bezier(0.2, 0, 0, 1)" }),
+  };
+
   return (
     <Rnd
-      {...rndConfig} // Spread the calculated config
-      style={{
-        zIndex,
-        boxShadow:
-          currentState === "maximized"
-            ? "none"
-            : "0 10px 25px rgba(0,0,0,0.15)",
-      }} // Apply zIndex and conditional shadow
-      className={styles.window} // Use existing CSS module class for basic frame styling
+      {...rndConfig}
+      style={containerStyle}
+      className={`${styles.window} ${
+        currentState === "maximized" ? styles.maximized : ""
+      }`}
       onMouseDownCapture={handleMouseDownCapture}
+      cancel={`.${styles.controlButton}`} // Don't initiate drag from control buttons
     >
-      {/* Title Bar - Add the drag handle class here */}
-      <div
-        className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`} // Add drag handle class
-        // No onMouseDown needed here for dragging anymore
-      >
+      {/* Title Bar */}
+      <div className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}>
         <div className={styles.windowControls}>
           <div
             className={`${styles.controlButton} ${styles.closeButton}`}
             onClick={() => closeWindow(id)}
-            onMouseDown={(e) => e.stopPropagation()} // Prevent drag initiation from buttons
+            onMouseDown={(e) => e.stopPropagation()}
           ></div>
           <div
             className={`${styles.controlButton} ${styles.minimizeButton}`}
             onClick={() => minimizeWindow(id)}
-            onMouseDown={(e) => e.stopPropagation()} // Prevent drag initiation
+            onMouseDown={(e) => e.stopPropagation()}
           ></div>
           <div
             className={`${styles.controlButton} ${styles.maximizeButton}`}
@@ -222,7 +224,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
               backgroundColor:
                 currentState === "maximized" ? "#00a03f" : "#00ca4e",
             }}
-            onMouseDown={(e) => e.stopPropagation()} // Prevent drag initiation
+            onMouseDown={(e) => e.stopPropagation()}
           ></div>
         </div>
         <span className={styles.windowTitle}>{title}</span>
@@ -231,11 +233,10 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
       {/* Content Area */}
       <div
         className={styles.contentWrapper}
-        // Make content area non-draggable explicitly if needed, though dragHandleClassName should suffice
         style={{
           overflowY: "auto",
           overflowX: "hidden",
-          height: "calc(100% - 24px)", // Adjust based on title bar height
+          height: "calc(100% - 24px)",
           color: "#333",
         }}
       >

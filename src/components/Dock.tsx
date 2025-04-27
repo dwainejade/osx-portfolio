@@ -3,10 +3,8 @@ import React from "react";
 import DockIcon from "./DockIcon";
 import styles from "./Dock.module.css";
 import useWindowsStore from "../store/windowsStore";
-import useFileSystemStore from "../store/fileSystemStore";
-import { initializeFileSystem } from "../store/fileSystemPersistence";
 
-// Example array of dock items - replace with your actual portfolio items
+// Example array of dock items with components
 const dockItems = [
   {
     id: "finder",
@@ -14,7 +12,7 @@ const dockItems = [
     alt: "Finder",
     label: "Finder",
     type: "system",
-    component: "FinderWindow", // Component to render
+    component: "finder", // Component identifier
   },
   {
     id: "browser",
@@ -22,7 +20,7 @@ const dockItems = [
     alt: "Browser",
     label: "Browser (Portfolio)",
     type: "portfolio",
-    component: "BrowserWindow",
+    component: "browser", // Component identifier
   },
   {
     id: "code",
@@ -30,7 +28,7 @@ const dockItems = [
     alt: "VS Code",
     label: "Code Editor (Project 1)",
     type: "portfolio",
-    component: "CodeWindow",
+    component: "code", // Component identifier
   },
   {
     id: "image",
@@ -38,7 +36,7 @@ const dockItems = [
     alt: "Photos",
     label: "Image Viewer (Project 2)",
     type: "portfolio",
-    component: "ImageWindow",
+    component: "image", // Component identifier
   },
   {
     id: "settings",
@@ -46,7 +44,7 @@ const dockItems = [
     alt: "Settings",
     label: "Settings",
     type: "system",
-    component: "SettingsWindow",
+    component: "settings", // Component identifier
   },
   {
     id: "trash",
@@ -54,32 +52,29 @@ const dockItems = [
     alt: "Trash",
     label: "Trash",
     type: "system",
-    component: "TrashWindow",
+    component: "trash", // Component identifier
   },
 ];
 
 const Dock: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow);
   const openWindows = useWindowsStore((state) => state.openWindows);
-  const navigateTo = useFileSystemStore((state) => state.navigateTo);
-
-  // Initialize file system on first render
-  React.useEffect(() => {
-    initializeFileSystem();
-  }, []);
+  const restoreWindow = useWindowsStore((state) => state.restoreWindow);
 
   const handleIconClick = (item: (typeof dockItems)[0]) => {
-    // Handle special case for Finder: open it with the current folder
-    if (item.id === "finder") {
-      // Get current folder ID from file system store
-      const currentFolderId = useFileSystemStore.getState().currentFolderId;
+    // Check if window is already open
+    const existingWindow = openWindows.find((window) => window.id === item.id);
 
-      // Open the Finder window and pass the current folder as a prop
-      openWindow(item.id, item.label, item.component, undefined, undefined, {
-        initialFolderId: currentFolderId,
-      });
+    if (existingWindow) {
+      // If minimized, restore it
+      if (existingWindow.state === "minimized") {
+        restoreWindow(item.id);
+      } else {
+        // If already open but not minimized, bring to front
+        useWindowsStore.getState().bringWindowToFront(item.id);
+      }
     } else {
-      // For other apps, just open the window normally
+      // If not open, open a new window
       openWindow(item.id, item.label, item.component);
     }
   };
@@ -90,6 +85,7 @@ const Dock: React.FC = () => {
         {dockItems.map((item) => (
           <DockIcon
             key={item.id}
+            id={item.id} // Pass id for data-window-id attribute
             src={item.src}
             alt={item.alt}
             label={item.label}
