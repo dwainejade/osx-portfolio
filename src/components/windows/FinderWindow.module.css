@@ -1,0 +1,116 @@
+/* src/components/windows/FinderWindow.module.css */
+.finderWindow {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: #f8f8f8;
+  color: #333;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background-color: #e4e4e4;
+  border-bottom: 1px solid #d1d1d1;
+  flex-shrink: 0;
+}
+
+.navigationButtons {
+  display: flex;
+  gap: 5px;
+  margin-right: 10px;
+}
+
+.navigationButtons button {
+  background-color: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 14px;
+}
+
+.navigationButtons button:disabled {
+  color: #aaa;
+  cursor: default;
+}
+
+.pathBreadcrumb {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #d1d1d1;
+  border-radius: 4px;
+  padding: 0 8px;
+  height: 28px;
+  overflow: hidden;
+}
+
+.breadcrumbButton {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  color: #333;
+}
+
+.separator {
+  margin: 0 2px;
+  color: #888;
+}
+
+.viewControls {
+  display: flex;
+  margin-left: 10px;
+}
+
+.viewControls button {
+  background-color: #ffffff;
+  border: 1px solid #d1d1d1;
+  padding: 5px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.viewControls button:first-child {
+  border-radius: 4px 0 0 4px;
+  border-right: none;
+}
+
+.viewControls button:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.viewControls button.activeView {
+  background-color: #0070f3;
+  color: white;
+  border-color: #0060d0;
+}
+
+.finderContent {
+  flex: 1;
+  overflow: hidden;
+  background-color: white;
+}
+
+.statusBar {
+  height: 22px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border-top: 1px solid #d1d1d1;
+  font-size: 11px;
+  color: #666;
+}

@@ -4,7 +4,7 @@ import DockIcon from "./DockIcon";
 import styles from "./Dock.module.css";
 import useWindowsStore from "../store/windowsStore";
 
-// Example array of dock items - replace with your actual portfolio items
+// Example array of dock items with components
 const dockItems = [
   {
     id: "finder",
@@ -12,6 +12,7 @@ const dockItems = [
     alt: "Finder",
     label: "Finder",
     type: "system",
+    component: "finder", // Component identifier
   },
   {
     id: "browser",
@@ -19,6 +20,7 @@ const dockItems = [
     alt: "Browser",
     label: "Browser (Portfolio)",
     type: "portfolio",
+    component: "browser", // Component identifier
   },
   {
     id: "code",
@@ -26,6 +28,7 @@ const dockItems = [
     alt: "VS Code",
     label: "Code Editor (Project 1)",
     type: "portfolio",
+    component: "code", // Component identifier
   },
   {
     id: "image",
@@ -33,6 +36,7 @@ const dockItems = [
     alt: "Photos",
     label: "Image Viewer (Project 2)",
     type: "portfolio",
+    component: "image", // Component identifier
   },
   {
     id: "settings",
@@ -40,6 +44,7 @@ const dockItems = [
     alt: "Settings",
     label: "Settings",
     type: "system",
+    component: "settings", // Component identifier
   },
   {
     id: "trash",
@@ -47,17 +52,31 @@ const dockItems = [
     alt: "Trash",
     label: "Trash",
     type: "system",
+    component: "trash", // Component identifier
   },
 ];
 
 const Dock: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow);
   const openWindows = useWindowsStore((state) => state.openWindows);
+  const restoreWindow = useWindowsStore((state) => state.restoreWindow);
 
   const handleIconClick = (item: (typeof dockItems)[0]) => {
-    // Call the openWindow action. Don't pass a position here,
-    // so the store calculates the default centered/offset position.
-    openWindow(item.id, item.label, item.component);
+    // Check if window is already open
+    const existingWindow = openWindows.find((window) => window.id === item.id);
+
+    if (existingWindow) {
+      // If minimized, restore it
+      if (existingWindow.state === "minimized") {
+        restoreWindow(item.id);
+      } else {
+        // If already open but not minimized, bring to front
+        useWindowsStore.getState().bringWindowToFront(item.id);
+      }
+    } else {
+      // If not open, open a new window
+      openWindow(item.id, item.label, item.component);
+    }
   };
 
   return (
@@ -66,6 +85,7 @@ const Dock: React.FC = () => {
         {dockItems.map((item) => (
           <DockIcon
             key={item.id}
+            id={item.id} // Pass id for data-window-id attribute
             src={item.src}
             alt={item.alt}
             label={item.label}

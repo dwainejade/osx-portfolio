@@ -1,0 +1,157 @@
+/* src/components/windows/ResumeWindow.module.css */
+.resumeWindow {
+  height: 100%;
+  display: flex;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  background-color: #f0f0f0;
+  padding: 24px;
+  border-right: 1px solid #ddd;
+  overflow-y: auto;
+}
+
+.mainContent {
+  flex: 1;
+  padding: 24px;
+  overflow-y: auto;
+  background-color: white;
+}
+
+.sidebarHeading,
+.contentHeading {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+.skillsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.skillItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.skillName {
+  font-weight: 500;
+  color: #444;
+}
+
+.skillLevel {
+  display: flex;
+  gap: 4px;
+}
+
+.skillDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #ddd;
+}
+
+.skillDot.active {
+  background-color: #0078d7;
+}
+
+.educationList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.educationItem {
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
+}
+
+.educationPeriod {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.educationDegree {
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+.educationInstitution {
+  color: #555;
+}
+
+.downloadResume {
+  margin-top: 20px;
+}
+
+.downloadButton {
+  display: inline-block;
+  background-color: #0078d7;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.downloadButton:hover {
+  background-color: #0063b1;
+}
+
+.experienceList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.experienceItem {
+  padding-bottom: 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.experienceHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.experienceRole {
+  font-weight: 600;
+  font-size: 18px;
+  color: #333;
+}
+
+.experiencePeriod {
+  color: #666;
+  font-size: 14px;
+}
+
+.experienceCompany {
+  color: #0078d7;
+  font-weight: 500;
+  margin-bottom: 12px;
+}
+
+.experienceDescription {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.experienceDescription li {
+  margin-bottom: 8px;
+  color: #555;
+  line-height: 1.5;
+}

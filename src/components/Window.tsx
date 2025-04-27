@@ -1,11 +1,7 @@
 // src/components/Window.tsx
-import React, { useRef } from "react";
-import {
-  motion,
-  PanInfo,
-  useMotionValue,
-  AnimatePresence,
-} from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import WindowContainer from "./WindowContainer";
 import styles from "./Window.module.css";
 import useWindowsStore from "../store/windowsStore";
 
@@ -28,65 +24,39 @@ const Window: React.FC<WindowProps> = ({
   currentState,
   zIndex,
 }) => {
-  const closeWindow = useWindowsStore((state) => state.closeWindow);
-  const updateWindowPosition = useWindowsStore(
-    (state) => state.updateWindowPosition
-  );
-  const updateWindowSize = useWindowsStore((state) => state.updateWindowSize);
-  const minimizeWindow = useWindowsStore((state) => state.minimizeWindow);
-  const maximizeWindow = useWindowsStore((state) => state.maximizeWindow);
-  const restoreWindow = useWindowsStore((state) => state.restoreWindow);
-  const bringWindowToFront = useWindowsStore(
-    (state) => state.bringWindowToFront
-  );
+  // State to track animation for minimize
+  const [isMinimizing, setIsMinimizing] = useState(false);
+  const [minimizeTarget, setMinimizeTarget] = useState({ x: 0, y: 0 });
 
-  const windowRef = useRef<HTMLDivElement>(null);
+  // Get dock position for minimize animation
+  useEffect(() => {
+    if (currentState === "minimized" && !isMinimizing) {
+      // Find the dock icon's position for this window
+      const dockIcon = document.querySelector(`[data-window-id="${id}"]`);
+      if (dockIcon) {
+        const rect = dockIcon.getBoundingClientRect();
+        setMinimizeTarget({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2,
+        });
+        setIsMinimizing(true);
 
-  const x = useMotionValue(initialPosition.x);
-  const y = useMotionValue(initialPosition.y);
-  const width = useMotionValue(initialSize.width);
-  const height = useMotionValue(initialSize.height);
+        // After animation completes, reset the flag
+        const timer = setTimeout(() => {
+          setIsMinimizing(false);
+        }, 300);
 
-  React.useEffect(() => {
-    x.set(initialPosition.x);
-    y.set(initialPosition.y);
-    width.set(initialSize.width);
-    height.set(initialSize.height);
-  }, [
-    initialPosition.x,
-    initialPosition.y,
-    initialSize.width,
-    initialSize.height,
-    x,
-    y,
-    width,
-    height,
-  ]);
-
-  const handleDragEnd = (
-    event: MouseEvent | TouchEvent | PointerEvent,
-    info: PanInfo
-  ) => {
-    if (currentState === "normal") {
-      const finalPosition = {
-        x: x.get(),
-        y: y.get(),
-      };
-      updateWindowPosition(id, finalPosition);
+        return () => clearTimeout(timer);
+      }
     }
-  };
+  }, [currentState, id]);
 
-  const handleWindowClick = () => {
-    bringWindowToFront(id);
-  };
-
+  // The WindowContent component can be dynamically selected based on the 'component' string
+  // In a more complete implementation, you'd map the string to actual components
   const WindowContent = () => {
-    // TODO: Map 'component' string to actual React components
+    // Here you could implement a switch statement to return different content based on component
     return (
-      <div
-        className={styles.windowContent}
-        style={{ overflow: currentState === "maximized" ? "auto" : "auto" }}
-      >
+      <div className={styles.windowContent}>
         <h3>Content for: {title}</h3>
         <p>Current State: {currentState}</p>
         <p>
@@ -120,115 +90,60 @@ const Window: React.FC<WindowProps> = ({
     );
   };
 
-  const animationTarget = React.useMemo(() => {
-    const baseTarget = {
-      opacity: 1,
-      scale: 1,
-      pointerEvents: "auto" as "auto" | "none", // Cast to union type
-    };
-
-    switch (currentState) {
-      case "normal":
-        return {
-          ...baseTarget,
+  // If we're animating minimization, render a Framer Motion div
+  if (isMinimizing) {
+    return (
+      <motion.div
+        className={styles.minimizingWindow}
+        initial={{
           x: initialPosition.x,
           y: initialPosition.y,
           width: initialSize.width,
           height: initialSize.height,
-        };
-      case "minimized":
-        // Placeholder for minimize animation target
-        return {
-          ...baseTarget,
-          x: x.get(), // Stay at current x for now
-          y: window.innerHeight - 30, // Example: move near the bottom
-          width: 50, // Example: shrink to icon size
-          height: 30, // Example: shrink height
-          opacity: 0, // Fade out
-          scale: 0.5, // Shrink animation
-          pointerEvents: "none" as "auto" | "none", // Disable interactions
-        };
-      case "maximized":
-        // Target for maximized state
-        return {
-          ...baseTarget,
-          x: 0,
-          y: 0,
-          width: window.innerWidth,
-          height: window.innerHeight,
-          transition: {
-            // Define specific transitions for maximize
-            x: { duration: 0.3, ease: "easeOut" },
-            y: { duration: 0.3, ease: "easeOut" },
-            width: { duration: 0.3, ease: "easeOut" },
-            height: { duration: 0.3, ease: "easeOut" },
-            // Add other properties if needed
-          },
-        };
-      default:
-        return {};
-    }
-  }, [currentState, initialPosition, initialSize, x, y]);
-
-  const isDraggable = currentState === "normal";
-  const greenButtonAction =
-    currentState === "maximized" ? restoreWindow : maximizeWindow;
-
-  // Log the animation target whenever it changes
-  React.useEffect(() => {
-    console.log(
-      `Window ${id} - Animation Target for state ${currentState}:`,
-      animationTarget
-    );
-  }, [animationTarget, currentState, id]);
-
-  return (
-    <motion.div
-      ref={windowRef}
-      className={styles.window}
-      initial={{ opacity: 0, scale: 0.8 }} // Initial mount animation
-      animate={animationTarget} // Animate to the target based on state
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.2 }} // Default transition for exit, etc.
-      style={{
-        x,
-        y,
-        width,
-        height,
-        zIndex,
-        pointerEvents: currentState === "minimized" ? "none" : "auto",
-      }}
-      drag={isDraggable}
-      dragMomentum={false}
-      onDragEnd={handleDragEnd}
-      onMouseDown={handleWindowClick}
-      onDragStart={handleWindowClick}
-    >
-      <div className={styles.titleBar}>
-        <div className={styles.windowControls}>
-          <div
-            className={`${styles.controlButton} ${styles.closeButton}`}
-            onClick={() => closeWindow(id)}
-          ></div>
-          {/* Minimize Button */}
-          <div
-            className={`${styles.controlButton} ${styles.minimizeButton}`}
-            onClick={() => minimizeWindow(id)}
-          ></div>
-          {/* Maximize/Restore Button */}
-          <div
-            className={`${styles.controlButton} ${styles.maximizeButton}`}
-            onClick={() => greenButtonAction(id)}
-            style={{
-              backgroundColor:
-                currentState === "maximized" ? "#00a03f" : "#00ca4e",
-            }}
-          ></div>
+          opacity: 1,
+          scale: 1,
+          zIndex,
+        }}
+        animate={{
+          x: minimizeTarget.x - initialSize.width / 2,
+          y: minimizeTarget.y - initialSize.height / 2,
+          width: 50,
+          height: 50,
+          opacity: 0,
+          scale: 0.1,
+          zIndex,
+        }}
+        transition={{
+          duration: 0.3,
+          ease: [0.2, 0, 0, 1],
+        }}
+      >
+        <div className={styles.minimizingContent}>
+          <div className={styles.titleBar}>
+            <span className={styles.windowTitle}>{title}</span>
+          </div>
         </div>
-        <span className={styles.windowTitle}>{title}</span>
-      </div>
+      </motion.div>
+    );
+  }
+
+  // If the window is minimized and not animating, don't render anything
+  if (currentState === "minimized" && !isMinimizing) {
+    return null;
+  }
+
+  // Otherwise, render the regular window
+  return (
+    <WindowContainer
+      id={id}
+      title={title}
+      position={initialPosition}
+      size={initialSize}
+      currentState={currentState}
+      zIndex={zIndex}
+    >
       <WindowContent />
-    </motion.div>
+    </WindowContainer>
   );
 };
 

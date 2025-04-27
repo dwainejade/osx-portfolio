@@ -1,28 +1,29 @@
 /* src/components/Window.module.css */
 .window {
-  position: absolute; /* Keep absolute positioning */
   background-color: #f0f0f0;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  /* width and height are now controlled by motion values and style prop */
-  min-width: 200px;
-  min-height: 100px;
-  /* z-index is now controlled by the style prop */
-  /* resize: both; */
-  /* overflow: hidden; */ /* Overflow might be auto on content depending on state */
+  /* min dimensions */
+  min-width: 300px;
+  min-height: 200px;
+  height: 100%;
+  /* Optimize for performance */
+  will-change: transform, width, height;
+  /* Apply hardware acceleration */
+  transform: translateZ(0);
 }
 
 .titleBar {
-  height: 24px;
+  /* height: 24px; */
   background-color: #e0e0e0;
   border-bottom: 1px solid #d0d0d0;
   display: flex;
   align-items: center;
   padding: 0 8px;
-  cursor: grab;
+  /* cursor: grab; */
   user-select: none;
   -webkit-user-select: none;
   flex-shrink: 0;
@@ -31,13 +32,14 @@
 .windowControls {
   display: flex;
   gap: 6px;
+  z-index: 10; /* Ensure buttons are clickable */
 }
 
 .controlButton {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  cursor: pointer;
+  /* cursor: pointer; */
   transition: background-color 0.1s ease;
 }
 
@@ -59,7 +61,6 @@
   background-color: #00ca4e;
 }
 .maximizeButton:hover {
-  /* Hover effect for the maximize/restore button */
   background-color: #00a03f; /* Darker green */
 }
 
@@ -76,8 +77,142 @@
 }
 
 .windowContent {
-  flex-grow: 1;
   padding: 15px;
-  /* overflow: auto; */ /* Let style prop or JS manage based on state */
   background-color: #fefefe;
+  color: #333;
+}
+
+.contentWrapper {
+  flex-grow: 1;
+  overflow: auto;
+  background-color: #fefefe;
+  /* Optimize scrolling performance */
+  -webkit-overflow-scrolling: touch;
+  will-change: transform;
+}
+
+/* Add specific styling for resize handles */
+/* Styling for react-rnd resize handles */
+.window :global(.react-draggable) {
+  height: 100%;
+}
+
+.window :global(.react-rnd-resizable-handle) {
+  position: absolute;
+  background-repeat: no-repeat;
+  background-origin: content-box;
+  box-sizing: border-box;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.window:hover :global(.react-rnd-resizable-handle) {
+  opacity: 1;
+}
+
+.window :global(.react-rnd-resizable-handle-se) {
+  bottom: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: se-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-e) {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 40px;
+  cursor: e-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-s) {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 8px;
+  width: 40px;
+  cursor: s-resize;
+}
+
+/* Make resize handles larger for easier grabbing */
+.window :global(.react-rnd-resizable-handle-sw) {
+  bottom: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  cursor: sw-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-w) {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 40px;
+  cursor: w-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-n) {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 8px;
+  width: 40px;
+  cursor: n-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-ne) {
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  cursor: ne-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-nw) {
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  cursor: nw-resize;
+}
+
+/* Hide resize handles when maximized */
+.maximized :global(.react-rnd-resizable-handle) {
+  display: none !important;
+}
+
+/* Apply transitions only to certain states to improve performance */
+.maximized,
+.appearing {
+  transition: width 300ms cubic-bezier(0.2, 0, 0, 1),
+    height 300ms cubic-bezier(0.2, 0, 0, 1),
+    transform 300ms cubic-bezier(0.2, 0, 0, 1),
+    top 300ms cubic-bezier(0.2, 0, 0, 1), left 300ms cubic-bezier(0.2, 0, 0, 1) !important;
+}
+
+/* Styles for the minimizing animation */
+.minimizingWindow {
+  position: absolute;
+  background-color: #f0f0f0;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  pointer-events: none; /* Prevent interaction during animation */
+  will-change: transform, opacity;
+}
+
+/* Fix for react-rnd to make dragging smoother */
+:global(.react-draggable-dragging) {
+  transition: none !important;
+  will-change: transform;
+}
+
+:global(.react-resizable-resizing) {
+  transition: none !important;
+  will-change: width, height;
 }
