@@ -1,3 +1,4 @@
+// src/components/WindowContainer.tsx
 import React, { useRef, useEffect } from "react";
 import { Rnd, Props as RndProps } from "react-rnd"; // Import Rnd and its types
 import styles from "./Window.module.css";
@@ -234,7 +235,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
         style={{
           overflowY: "auto",
           overflowX: "hidden",
-          height: "calc(100% - 30px)", // Adjust based on title bar height
+          height: "calc(100% - 24px)", // Adjust based on title bar height
           color: "#333",
         }}
       >

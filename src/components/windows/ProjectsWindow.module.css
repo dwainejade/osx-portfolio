@@ -1,0 +1,110 @@
+/* src/components/windows/ProjectsWindow.module.css */
+.projectsWindow {
+  padding: 20px;
+  height: 100%;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+}
+
+.heading {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 24px;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.projectsGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 768px) {
+  .projectsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.projectCard {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.projectCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.projectImageContainer {
+  height: 180px;
+  overflow: hidden;
+}
+
+.projectImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.projectCard:hover .projectImage {
+  transform: scale(1.05);
+}
+
+.projectContent {
+  padding: 20px;
+}
+
+.projectTitle {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 18px;
+}
+
+.projectDescription {
+  color: #666;
+  margin-bottom: 15px;
+  line-height: 1.5;
+}
+
+.technologies {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.techBadge {
+  background-color: #e0f2fe;
+  color: #0284c7;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.projectLinks {
+  display: flex;
+  gap: 10px;
+}
+
+.projectLink {
+  display: inline-block;
+  padding: 8px 16px;
+  background-color: #0078d7;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.projectLink:hover {
+  background-color: #0063b1;
+}

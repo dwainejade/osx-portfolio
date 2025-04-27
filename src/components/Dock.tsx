@@ -1,52 +1,40 @@
+// src/components/Dock.tsx
 import React from "react";
 import DockIcon from "./DockIcon";
 import styles from "./Dock.module.css";
 import useWindowsStore from "../store/windowsStore";
 
-// Example array of dock items - replace with your actual portfolio items
+// Updated dock items with portfolio components
 const dockItems = [
   {
-    id: "finder",
-    src: "/assets/icons/finder.png",
-    alt: "Finder",
-    label: "Finder",
-    type: "system",
+    id: "about",
+    src: "/assets/icons/user.png", // Replace with your own icon
+    alt: "About Me",
+    label: "About Me",
+    component: "AboutMeWindow",
   },
   {
-    id: "browser",
-    src: "/assets/icons/safari.png",
-    alt: "Browser",
-    label: "Browser (Portfolio)",
-    type: "portfolio",
+    id: "projects",
+    src: "/assets/icons/folder.png", // Replace with your own icon
+    alt: "Projects",
+    label: "Projects",
+    component: "ProjectsWindow",
   },
   {
-    id: "code",
-    src: "/assets/icons/vscode.png",
-    alt: "VS Code",
-    label: "Code Editor (Project 1)",
-    type: "portfolio",
+    id: "resume",
+    src: "/assets/icons/document.png", // Replace with your own icon
+    alt: "Resume",
+    label: "Resume",
+    component: "ResumeWindow",
   },
   {
-    id: "image",
-    src: "/assets/icons/photos.png",
-    alt: "Photos",
-    label: "Image Viewer (Project 2)",
-    type: "portfolio",
+    id: "contact",
+    src: "/assets/icons/mail.png", // Replace with your own icon
+    alt: "Contact",
+    label: "Contact",
+    component: "ContactWindow",
   },
-  {
-    id: "settings",
-    src: "/assets/icons/settings.png",
-    alt: "Settings",
-    label: "Settings",
-    type: "system",
-  },
-  {
-    id: "trash",
-    src: "/assets/icons/trash_empty.png",
-    alt: "Trash",
-    label: "Trash",
-    type: "system",
-  },
+  // You can keep any existing items like settings or finder
 ];
 
 const Dock: React.FC = () => {
@@ -54,8 +42,7 @@ const Dock: React.FC = () => {
   const openWindows = useWindowsStore((state) => state.openWindows);
 
   const handleIconClick = (item: (typeof dockItems)[0]) => {
-    // Call the openWindow action. Don't pass a position here,
-    // so the store calculates the default centered/offset position.
+    // Call the openWindow action
     openWindow(item.id, item.label, item.component);
   };
 

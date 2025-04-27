@@ -20,14 +20,14 @@ export type WindowStateValue = "normal" | "minimized" | "maximized";
 export interface WindowState {
   id: string;
   title: string;
-  component: string; // Assuming component is a string identifier
-  position: WindowPosition;
-  size: WindowSize;
-  state: WindowStateValue;
-  zIndex: number;
-  // Optional: Store pre-minimized/maximized state if needed for more complex restore
-  // preMinimizedState?: { position: WindowPosition, size: WindowSize };
-  // preMaximizedState?: { position: WindowPosition, size: WindowSize };
+  component: string;
+  position: { x: number; y: number };
+  size: { width: number; height: number }; // Add size to state
+  state: WindowDisplayState; // Add display state
+  prevPosition?: { x: number; y: number }; // Store position before maximize
+  prevSize?: { width: number; height: number }; // Store size before maximize
+  zIndex: number; // Add z-index for layering (MVP Extra Feature)
+  props?: Record<string, any>; // Add props to store component-specific properties
 }
 
 interface WindowsStoreState {
@@ -38,8 +38,9 @@ interface WindowsStoreState {
     id: string,
     title: string,
     component: string,
-    userProvidedPosition?: WindowPosition,
-    userProvidedSize?: WindowSize
+    initialPosition?: { x: number; y: number },
+    initialSize?: { width: number; height: number },
+    props?: Record<string, any>
   ) => void;
   closeWindow: (id: string) => void;
   minimizeWindow: (id: string) => void;
@@ -60,7 +61,8 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
     title,
     component,
     userProvidedPosition,
-    userProvidedSize
+    userProvidedSize,
+    props
   ) => {
     const { openWindows, nextDefaultPositionOffset, lastZIndex } = get();
 
@@ -124,8 +126,9 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
       component,
       position: windowPosition!,
       size: windowSize,
-      state: "normal", // Initial state is normal
-      zIndex: newZIndex, // Assign the highest z-index
+      state: "normal",
+      zIndex: newZIndex,
+      props, // Assign the highest z-index
     };
 
     set((state) => ({
@@ -174,24 +177,32 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
 
   // --- RESTORE FUNCTION (Crucial for the logic) ---
   restoreWindow: (id) => {
-    const { lastZIndex } = get();
-    const newZIndex = lastZIndex + 1; // Get the next highest z-index
-    set((state) => ({
-      openWindows: state.openWindows.map((win) => {
-        if (win.id === id) {
-          // Restore to 'normal' state and bring to front
-          // It assumes win.position and win.size hold the correct values
-          // from the last time it was 'normal'.
-          return {
-            ...win,
-            state: "normal",
-            zIndex: newZIndex, // Assign highest z-index
-          };
-        }
-        return win;
-      }),
-      lastZIndex: newZIndex, // Update the highest z-index marker
-    }));
+    set((state) => {
+      const windowToRestore = state.openWindows.find((w) => w.id === id);
+      if (!windowToRestore) return state;
+
+      // Create a new window object with state set to normal
+      // and using prevPosition/prevSize if available
+      const restoredWindow = {
+        ...windowToRestore,
+        state: "normal" as const,
+        position: windowToRestore.prevPosition || windowToRestore.position,
+        size: windowToRestore.prevSize || windowToRestore.size,
+        // Clear prev values
+        prevPosition: undefined,
+        prevSize: undefined,
+      };
+
+      // Update all windows
+      return {
+        openWindows: state.openWindows.map((w) =>
+          w.id === id ? restoredWindow : w
+        ),
+      };
+    });
+
+    // After restoring, bring to front
+    get().bringWindowToFront(id);
   },
 
   // --- BRING TO FRONT FUNCTION (Used by openWindow and others) ---
@@ -214,18 +225,40 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
   // --- UPDATE POSITION/SIZE (Needed by react-rnd handlers) ---
   updateWindowPosition: (id, position) => {
     set((state) => ({
-      openWindows: state.openWindows.map((win) =>
-        win.id === id ? { ...win, position } : win
+      openWindows: state.openWindows.map((window) =>
+        window.id === id
+          ? {
+              ...window,
+              position,
+              // Store the new position even if maximized (for restore)
+              ...(window.state === "maximized"
+                ? { prevPosition: position }
+                : {}),
+            }
+          : window
       ),
     }));
+
+    // Log for debugging
+    console.log(`Position updated for window ${id}:`, position);
   },
 
   updateWindowSize: (id, size) => {
     set((state) => ({
-      openWindows: state.openWindows.map((win) =>
-        win.id === id ? { ...win, size } : win
+      openWindows: state.openWindows.map((window) =>
+        window.id === id
+          ? {
+              ...window,
+              size,
+              // Store the new size even if maximized (for restore)
+              ...(window.state === "maximized" ? { prevSize: size } : {}),
+            }
+          : window
       ),
     }));
+
+    // Log for debugging
+    console.log(`Size updated for window ${id}:`, size);
   },
 }));
 
