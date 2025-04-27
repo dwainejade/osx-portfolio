@@ -3,47 +3,85 @@ import React from "react";
 import DockIcon from "./DockIcon";
 import styles from "./Dock.module.css";
 import useWindowsStore from "../store/windowsStore";
+import useFileSystemStore from "../store/fileSystemStore";
+import { initializeFileSystem } from "../store/fileSystemPersistence";
 
-// Updated dock items with portfolio components
+// Example array of dock items - replace with your actual portfolio items
 const dockItems = [
   {
-    id: "about",
-    src: "/assets/icons/user.png", // Replace with your own icon
-    alt: "About Me",
-    label: "About Me",
-    component: "AboutMeWindow",
+    id: "finder",
+    src: "/assets/icons/finder.png",
+    alt: "Finder",
+    label: "Finder",
+    type: "system",
+    component: "FinderWindow", // Component to render
   },
   {
-    id: "projects",
-    src: "/assets/icons/folder.png", // Replace with your own icon
-    alt: "Projects",
-    label: "Projects",
-    component: "ProjectsWindow",
+    id: "browser",
+    src: "/assets/icons/safari.png",
+    alt: "Browser",
+    label: "Browser (Portfolio)",
+    type: "portfolio",
+    component: "BrowserWindow",
   },
   {
-    id: "resume",
-    src: "/assets/icons/document.png", // Replace with your own icon
-    alt: "Resume",
-    label: "Resume",
-    component: "ResumeWindow",
+    id: "code",
+    src: "/assets/icons/vscode.png",
+    alt: "VS Code",
+    label: "Code Editor (Project 1)",
+    type: "portfolio",
+    component: "CodeWindow",
   },
   {
-    id: "contact",
-    src: "/assets/icons/mail.png", // Replace with your own icon
-    alt: "Contact",
-    label: "Contact",
-    component: "ContactWindow",
+    id: "image",
+    src: "/assets/icons/photos.png",
+    alt: "Photos",
+    label: "Image Viewer (Project 2)",
+    type: "portfolio",
+    component: "ImageWindow",
   },
-  // You can keep any existing items like settings or finder
+  {
+    id: "settings",
+    src: "/assets/icons/settings.png",
+    alt: "Settings",
+    label: "Settings",
+    type: "system",
+    component: "SettingsWindow",
+  },
+  {
+    id: "trash",
+    src: "/assets/icons/trash_empty.png",
+    alt: "Trash",
+    label: "Trash",
+    type: "system",
+    component: "TrashWindow",
+  },
 ];
 
 const Dock: React.FC = () => {
   const openWindow = useWindowsStore((state) => state.openWindow);
   const openWindows = useWindowsStore((state) => state.openWindows);
+  const navigateTo = useFileSystemStore((state) => state.navigateTo);
+
+  // Initialize file system on first render
+  React.useEffect(() => {
+    initializeFileSystem();
+  }, []);
 
   const handleIconClick = (item: (typeof dockItems)[0]) => {
-    // Call the openWindow action
-    openWindow(item.id, item.label, item.component);
+    // Handle special case for Finder: open it with the current folder
+    if (item.id === "finder") {
+      // Get current folder ID from file system store
+      const currentFolderId = useFileSystemStore.getState().currentFolderId;
+
+      // Open the Finder window and pass the current folder as a prop
+      openWindow(item.id, item.label, item.component, undefined, undefined, {
+        initialFolderId: currentFolderId,
+      });
+    } else {
+      // For other apps, just open the window normally
+      openWindow(item.id, item.label, item.component);
+    }
   };
 
   return (

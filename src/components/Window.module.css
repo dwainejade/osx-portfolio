@@ -18,7 +18,7 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
-  cursor: grab;
+  /* cursor: grab; */
   user-select: none;
   -webkit-user-select: none;
   flex-shrink: 0;
@@ -33,7 +33,7 @@
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  cursor: pointer;
+  /* cursor: pointer; */
   transition: background-color 0.1s ease;
 }
 
@@ -89,15 +89,45 @@
 }
 
 /* Add specific styling for resize handles */
-.react-resizable-handle {
+/* Styling for react-rnd resize handles */
+.window :global(.react-draggable) {
+  height: 100%;
+}
+
+.window :global(.react-rnd-resizable-handle) {
   position: absolute;
-  width: 20px;
-  height: 20px;
-  bottom: 0;
-  right: 0;
   background-repeat: no-repeat;
   background-origin: content-box;
   box-sizing: border-box;
+}
+
+.window :global(.react-rnd-resizable-handle-se) {
+  bottom: 5px;
+  right: 5px;
+  width: 15px;
+  height: 15px;
   cursor: se-resize;
-  padding: 0 3px 3px 0;
+}
+
+.window :global(.react-rnd-resizable-handle-e) {
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 30px;
+  cursor: e-resize;
+}
+
+.window :global(.react-rnd-resizable-handle-s) {
+  bottom: 5px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 8px;
+  width: 30px;
+  cursor: s-resize;
+}
+
+/* Hide resize handles when maximized */
+.window.maximized :global(.react-rnd-resizable-handle) {
+  display: none;
 }
