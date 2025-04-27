@@ -1,6 +1,5 @@
 // In your App.tsx
-// import { useEffect } from "react";
-import Desktop from "./components/Desktop";
+// import Desktop from "./components/Desktop";
 import Dock from "./components/Dock";
 import Window from "./components/Window";
 import useWindowsStore from "./store/windowsStore";

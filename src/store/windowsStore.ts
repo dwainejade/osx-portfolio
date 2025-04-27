@@ -23,7 +23,7 @@ export interface WindowState {
   component: string;
   position: { x: number; y: number };
   size: { width: number; height: number }; // Add size to state
-  state: WindowDisplayState; // Add display state
+  state: WindowStateValue; // Add display state
   prevPosition?: { x: number; y: number }; // Store position before maximize
   prevSize?: { width: number; height: number }; // Store size before maximize
   zIndex: number; // Add z-index for layering (MVP Extra Feature)

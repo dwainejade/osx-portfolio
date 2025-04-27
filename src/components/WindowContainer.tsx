@@ -83,7 +83,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     bringWindowToFront(id);
   };
 
-  const handleDragStop: RndProps["onDragStop"] = (e, d) => {
+  const handleDragStop: RndProps["onDragStop"] = (_e, d) => {
     setIsInteracting(false);
 
     if (position.x !== d.x || position.y !== d.y) {
@@ -102,10 +102,10 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   };
 
   const handleResizeStop: RndProps["onResizeStop"] = (
-    e,
-    direction,
+    _e,
+    _direction,
     ref,
-    delta,
+    _delta,
     pos
   ) => {
     setIsInteracting(false);

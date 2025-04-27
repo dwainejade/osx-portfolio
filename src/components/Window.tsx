@@ -1,9 +1,9 @@
 // src/components/Window.tsx
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import WindowContainer from "./WindowContainer";
 import styles from "./Window.module.css";
-import useWindowsStore from "../store/windowsStore";
+// import useWindowsStore from "../store/windowsStore";
 
 interface WindowProps {
   id: string;
@@ -13,12 +13,12 @@ interface WindowProps {
   initialSize: { width: number; height: number };
   currentState: "normal" | "minimized" | "maximized";
   zIndex: number;
+  props?: Record<string, any>; // Add props to the interface
 }
 
 const Window: React.FC<WindowProps> = ({
   id,
   title,
-  component,
   initialPosition,
   initialSize,
   currentState,

@@ -1,6 +1,6 @@
 // src/store/fileSystemPersistence.ts
 import useFileSystemStore from "./fileSystemStore";
-import { FileSystemNode, Folder, File } from "./fileSystemTypes";
+import { FileSystemNode } from "./fileSystemTypes";
 
 // Keys for storing data in localStorage
 const FILE_SYSTEM_KEY = "macos-portfolio-file-system";
@@ -49,10 +49,11 @@ export const loadFileSystem = () => {
     const deserializedNodes: Record<string, FileSystemNode> = {};
 
     Object.entries(parsedNodes).forEach(([id, node]) => {
+      const typedNode = node as any;
       deserializedNodes[id] = {
-        ...(node as any),
-        createdAt: new Date(node.createdAt),
-        modifiedAt: new Date(node.modifiedAt),
+        ...typedNode,
+        createdAt: new Date(typedNode.createdAt),
+        modifiedAt: new Date(typedNode.modifiedAt),
       };
     });
 

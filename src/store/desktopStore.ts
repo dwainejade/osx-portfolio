@@ -53,10 +53,10 @@ const useDesktopStore = create<DesktopState>((set, get) => ({
   },
 
   findNextAvailablePosition: () => {
-    const { items, isOccupied } = get();
+    const { isOccupied } = get();
     // Simple grid filling logic (column-first, then row) - adjust as needed
     // Determine max columns/rows based on assumed desktop size or keep it simple
-    let position = { x: 0, y: 0 };
+    const position = { x: 0, y: 0 };
     let found = false;
     const maxAttempts = 1000; // Prevent infinite loop
     let attempts = 0;

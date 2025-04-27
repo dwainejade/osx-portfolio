@@ -11,7 +11,7 @@ interface DesktopItemProps {
 const DesktopItem: React.FC<DesktopItemProps> = ({ item, gridSize }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: ItemTypes.DESKTOP_ICON,
-    item: { id: item.id, originalPosition: item.position }, // Pass ID and original pos
+    item: { id: item.id, originalPosition: item.position },
     collect: (monitor) => ({
       isDragging: !!monitor.isDragging(),
     }),
@@ -25,22 +25,19 @@ const DesktopItem: React.FC<DesktopItemProps> = ({ item, gridSize }) => {
 
   return (
     <div
-      ref={drag}
+      ref={(node) => drag(node) as any} // Fix the ref type
       className={styles.desktopItem}
       style={{
         position: "absolute",
         left: `${pixelPosition.left}px`,
         top: `${pixelPosition.top}px`,
-        width: `${gridSize.width}px`, // Set size to match grid cell
+        width: `${gridSize.width}px`,
         height: `${gridSize.height}px`,
         opacity: isDragging ? 0.5 : 1,
         cursor: "default",
       }}
     >
-      {/* Replace with actual icon based on item.type/item.icon */}
-      <div className={styles.iconPlaceholder}>
-        {/* {item.type === "folder" ? " Fldr" : " File"} */}
-      </div>
+      <div className={styles.iconPlaceholder}></div>
       <span className={styles.iconLabel}>{item.name}</span>
     </div>
   );
