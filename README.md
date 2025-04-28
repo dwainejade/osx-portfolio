@@ -1,54 +1,52 @@
-# React + TypeScript + Vite
+# macOS Portfolio
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern, interactive portfolio website styled after the macOS desktop experience, built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Description
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project creates a portfolio website that mimics the look and feel of the macOS operating system. It features a realistic desktop environment with interactive windows, a dock, and animations.
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### Current Features
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+- [x] Desktop environment with custom wallpaper
+- [x] Interactive dock with application icons
+- [x] Window system with:
+  - [x] Dragging and resizing
+  - [x] Minimize/maximize animations
+  - [x] Window controls (close, minimize, maximize)
+  - [x] Z-index management (windows stack properly)
+- [x] Smooth animations
+- [] Multiple window types:
+  - [ ] About Me window
+  - [ ] Projects showcase window
+  - [ ] Resume/CV window
+  - [ ] Contact form window
+- [x] Responsive layout that works on different screen sizes
+- [x] State management with Zustand
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+### Future Features
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+- [ ] Virtual file system navigation
+- [ ] Draggable desktop icons
+- [ ] Menu bar with dropdown menus
+- [ ] Dark/Light mode toggle
+- [ ] Terminal application with interactive commands
+- [ ] Customizable dock and desktop preferences
+- [ ] Browser window with embedded portfolio pages
+- [ ] Interactive notifications
+- [ ] Spotlight-style search functionality
 
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
-```
+## Technologies
+
+- React
+- TypeScript
+- Vite
+- Framer Motion
+- Zustand
+- CSS Modules
+
+---
+
+Built with ❤️ as a creative portfolio showcase

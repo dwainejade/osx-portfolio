@@ -1,0 +1,80 @@
+/* src/components/windows/AboutMeWindow.module.css */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(0, 0, 0, 0.1);
+  border-radius: 50%;
+  border-top-color: #0078d7;
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  color: #d32f2f;
+  text-align: center;
+}
+
+.aboutMeContainer {
+  padding: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.profileSection {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.profileImage {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #0078d7;
+}
+
+.nameTitle h1 {
+  margin-top: 0;
+  margin-bottom: 0.25rem;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+.nameTitle h2 {
+  margin-top: 0;
+  color: #666;
+  font-weight: normal;
+  font-size: 1.1rem;
+}
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .profileSection {
+    flex-direction: column;
+    text-align: center;
+  }
+}

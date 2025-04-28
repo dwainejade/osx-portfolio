@@ -10,33 +10,49 @@ const dockItems = [
     id: "finder",
     src: "/assets/icons/finder.png",
     alt: "Finder",
-    label: "Finder",
+    label: "About Me",
     type: "system",
-    component: "finder", // Component identifier
+    component: "markdown", // Use markdown component for About Me
+    props: {
+      filePath: "/content/about-me.md",
+      showTitle: true,
+    },
   },
   {
     id: "browser",
     src: "/assets/icons/safari.png",
     alt: "Browser",
-    label: "Browser (Portfolio)",
+    label: "Blog",
     type: "portfolio",
-    component: "browser", // Component identifier
+    component: "blog-list", // Use blog-list component type for blog listing
+    props: {
+      listPath: "/content/blog/index.json",
+      showTitle: true,
+    },
   },
   {
     id: "code",
     src: "/assets/icons/vscode.png",
     alt: "VS Code",
-    label: "Code Editor (Project 1)",
+    label: "Projects",
     type: "portfolio",
-    component: "code", // Component identifier
+    component: "projects-list", // Use projects-list component type for projects listing
+    props: {
+      listPath: "/content/projects/index.json",
+      showTitle: true,
+    },
   },
   {
     id: "image",
     src: "/assets/icons/photos.png",
     alt: "Photos",
-    label: "Image Viewer (Project 2)",
+    label: "Gallery",
     type: "portfolio",
-    component: "image", // Component identifier
+    component: "markdown", // Can use markdown for a photo gallery page too
+    props: {
+      filePath: "/content/gallery.md",
+      showTitle: true,
+    },
   },
   {
     id: "settings",
@@ -44,7 +60,11 @@ const dockItems = [
     alt: "Settings",
     label: "Settings",
     type: "system",
-    component: "settings", // Component identifier
+    component: "markdown",
+    props: {
+      filePath: "/content/settings.md",
+      showTitle: true,
+    },
   },
   {
     id: "trash",
@@ -52,7 +72,11 @@ const dockItems = [
     alt: "Trash",
     label: "Trash",
     type: "system",
-    component: "trash", // Component identifier
+    component: "markdown",
+    props: {
+      filePath: "/content/trash.md",
+      showTitle: true,
+    },
   },
 ];
 
@@ -74,8 +98,27 @@ const Dock: React.FC = () => {
         useWindowsStore.getState().bringWindowToFront(item.id);
       }
     } else {
-      // If not open, open a new window
-      openWindow(item.id, item.label, item.component);
+      // If not open, open a new window with appropriate size and position
+      const defaultPosition = { x: 100, y: 50 };
+      let windowSize = { width: 700, height: 500 };
+
+      // Adjust size based on component type
+      if (
+        item.component === "projects-list" ||
+        item.component === "blog-list"
+      ) {
+        windowSize = { width: 800, height: 600 };
+      }
+
+      // Open the window with the component type and any custom props
+      openWindow(
+        item.id,
+        item.label,
+        item.component,
+        defaultPosition,
+        windowSize,
+        item.props
+      );
     }
   };
 
@@ -85,7 +128,7 @@ const Dock: React.FC = () => {
         {dockItems.map((item) => (
           <DockIcon
             key={item.id}
-            id={item.id} // Pass id for data-window-id attribute
+            id={item.id}
             src={item.src}
             alt={item.alt}
             label={item.label}

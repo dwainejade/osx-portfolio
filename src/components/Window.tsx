@@ -4,6 +4,13 @@ import { motion } from "framer-motion";
 import WindowContainer from "./WindowContainer";
 import styles from "./Window.module.css";
 // import useWindowsStore from "../store/windowsStore";
+import MarkdownWindow from "./windows/MarkdownWindow";
+import ContentListWindow from "./windows/ContentListWindow";
+// import AboutMeWindow from "./windows/AboutMeWindow";
+// import ProjectsWindow from "./windows/ProjectsWindow";
+// import ProjectDetailWindow from "./windows/ProjectDetailWindow";
+// import BlogWindow from "./windows/BlogWindow";
+// import BlogPostWindow from "./windows/BlogPostWindow";
 
 interface WindowProps {
   id: string;
@@ -19,10 +26,12 @@ interface WindowProps {
 const Window: React.FC<WindowProps> = ({
   id,
   title,
+  component,
   initialPosition,
   initialSize,
   currentState,
   zIndex,
+  props,
 }) => {
   // State to track animation for minimize
   const [isMinimizing, setIsMinimizing] = useState(false);
@@ -51,43 +60,44 @@ const Window: React.FC<WindowProps> = ({
     }
   }, [currentState, id]);
 
-  // The WindowContent component can be dynamically selected based on the 'component' string
-  // In a more complete implementation, you'd map the string to actual components
-  const WindowContent = () => {
-    // Here you could implement a switch statement to return different content based on component
-    return (
-      <div className={styles.windowContent}>
-        <h3>Content for: {title}</h3>
-        <p>Current State: {currentState}</p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-        <p>
-          Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-          eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad
-          minim veniam, quis nostrud exercitation ullamco laboris nisi ut
-          aliquip ex ea commodo consequat. Duis aute irure dolor in
-          reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
-          pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-          culpa qui officia deserunt mollit anim id est laborum.
-        </p>
-      </div>
-    );
+  // Render the appropriate window content based on the component string
+  const renderWindowContent = () => {
+    switch (component) {
+      case "markdown":
+        // Used for About Me, Project Detail, and Blog Post windows
+        return (
+          <MarkdownWindow
+            content={props?.content}
+            filePath={props?.filePath}
+            title={props?.showTitle ? title : undefined}
+          />
+        );
+      case "projects-list":
+        return (
+          <ContentListWindow
+            type="projects"
+            listPath={props?.listPath || "/content/projects/projects.json"}
+            title={props?.title || "Projects"}
+          />
+        );
+      case "blog-list":
+        return (
+          <ContentListWindow
+            type="blog"
+            listPath={props?.listPath || "/content/blog/blog.json"}
+            title={props?.title || "Blog"}
+          />
+        );
+      // Add other window types here as needed
+      default:
+        return (
+          <div className={styles.defaultWindowContent}>
+            <h3>Content for: {title}</h3>
+            <p>Component type: {component}</p>
+            <p>Window ID: {id}</p>
+          </div>
+        );
+    }
   };
 
   // If we're animating minimization, render a Framer Motion div
@@ -142,7 +152,7 @@ const Window: React.FC<WindowProps> = ({
       currentState={currentState}
       zIndex={zIndex}
     >
-      <WindowContent />
+      {renderWindowContent()}
     </WindowContainer>
   );
 };

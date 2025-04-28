@@ -1,0 +1,51 @@
+[
+    {
+        "id": "project-1",
+        "title": "E-commerce Platform",
+        "description": "A fully responsive e-commerce site with cart functionality and payment processing.",
+        "filePath": "/content/projects/project-1.md",
+        "tags": [
+            "React",
+            "Redux",
+            "Node.js",
+            "MongoDB",
+            "Stripe"
+        ]
+    },
+    {
+        "id": "project-2",
+        "title": "Weather Dashboard",
+        "description": "Real-time weather application that displays current conditions and forecasts for any location.",
+        "filePath": "/content/projects/project-1.md",
+        "tags": [
+            "React",
+            "OpenWeather API",
+            "Chart.js",
+            "Tailwind CSS"
+        ]
+    },
+    {
+        "id": "project-3",
+        "title": "Task Management App",
+        "description": "Productivity application for managing tasks, projects, and team collaboration.",
+        "filePath": "/content/projects/project-1.md",
+        "tags": [
+            "React",
+            "TypeScript",
+            "Firebase",
+            "Material UI"
+        ]
+    },
+    {
+        "id": "project-4",
+        "title": "Portfolio Website",
+        "description": "macOS-inspired portfolio website built with React and TypeScript.",
+        "filePath": "/content/projects/project-1.md",
+        "tags": [
+            "React",
+            "TypeScript",
+            "Framer Motion",
+            "Zustand"
+        ]
+    }
+]
