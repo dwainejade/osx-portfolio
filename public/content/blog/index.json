@@ -1,0 +1,64 @@
+[
+    {
+        "id": "macos-portfolio",
+        "title": "Building a macOS-inspired Portfolio with React",
+        "date": "2025-04-28",
+        "summary": "My journey creating a portfolio website styled after the macOS interface.",
+        "tags": [
+            "React",
+            "TypeScript",
+            "UI/UX",
+            "Portfolio"
+        ],
+        "filePath": "/content/blog/2025-04-28-macos-portfolio.md"
+    },
+    {
+        "id": "css-grid",
+        "title": "The Power of CSS Grid in Modern Web Design",
+        "date": "2023-07-22",
+        "summary": "How CSS Grid has transformed the way we approach web layouts.",
+        "tags": [
+            "CSS",
+            "Web Design",
+            "Frontend"
+        ],
+        "filePath": "/content/blog/css-grid.md"
+    },
+    {
+        "id": "typescript-tips",
+        "title": "10 TypeScript Tips to Improve Your Code Quality",
+        "date": "2023-06-10",
+        "summary": "Practical TypeScript tips that will make your code more robust and maintainable.",
+        "tags": [
+            "TypeScript",
+            "JavaScript",
+            "Best Practices"
+        ],
+        "filePath": "/content/blog/typescript-tips.md"
+    },
+    {
+        "id": "react-state-management",
+        "title": "Comparing React State Management Solutions in 2023",
+        "date": "2023-05-18",
+        "summary": "An overview of the most popular state management libraries for React applications.",
+        "tags": [
+            "React",
+            "State Management",
+            "Redux",
+            "Zustand"
+        ],
+        "filePath": "/content/blog/react-state-management.md"
+    },
+    {
+        "id": "web-performance",
+        "title": "Web Performance Optimization Techniques",
+        "date": "2023-04-05",
+        "summary": "Strategies to improve the loading speed and performance of your web applications.",
+        "tags": [
+            "Performance",
+            "Web Development",
+            "Optimization"
+        ],
+        "filePath": "/content/blog/web-performance.md"
+    }
+]
