@@ -20,7 +20,6 @@ interface WindowContainerProps {
 
 const WindowContainer: React.FC<WindowContainerProps> = ({
   id,
-  title,
   position = { x: 100, y: 100 },
   size = { width: 600, height: 400 },
   currentState,
