@@ -20,6 +20,7 @@ interface WindowContainerProps {
 
 const WindowContainer: React.FC<WindowContainerProps> = ({
   id,
+  title,
   position = { x: 100, y: 100 },
   size = { width: 600, height: 400 },
   currentState,
@@ -37,6 +38,9 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   const bringWindowToFront = useWindowsStore(
     (state) => state.bringWindowToFront
   );
+
+  // Reference to track double-click
+  const lastClickTime = useRef<number>(0);
 
   // Get current window size from our custom hook
   const windowSize = useWindowResize();
@@ -143,6 +147,30 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     restoreWindow(id);
   };
 
+  // --- Handle Double Click on Title Bar ---
+  const handleTitleBarClick = (e: React.MouseEvent) => {
+    // Only handle clicks directly on the title bar, not on the control buttons
+    const targetElement = e.target as HTMLElement;
+    if (targetElement.closest(`.${styles.controlButton}`)) {
+      return;
+    }
+
+    const now = Date.now();
+    const timeSinceLastClick = now - lastClickTime.current;
+
+    // Check if this is a double click (within 300ms)
+    if (timeSinceLastClick < 300) {
+      // Toggle between maximized and normal state
+      if (currentState === "maximized") {
+        handleRestore();
+      } else {
+        handleMaximize();
+      }
+    }
+
+    lastClickTime.current = now;
+  };
+
   // --- Rnd Configuration based on State ---
   let rndConfig: Partial<RndProps> = {
     size: { width: size.width, height: size.height },
@@ -209,7 +237,10 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
       cancel={`.${styles.controlButton}`} // Don't initiate drag from control buttons
     >
       {/* Title Bar */}
-      <div className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}>
+      <div
+        className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}
+        onClick={handleTitleBarClick}
+      >
         <div className={styles.windowControls}>
           <div
             className={`${styles.controlButton} ${styles.closeButton}`}
