@@ -2,6 +2,7 @@
 // import Desktop from "./components/Desktop";
 import Dock from "./components/Dock";
 import Window from "./components/Window";
+import TopMenu from "./components/TopMenu";
 import useWindowsStore from "./store/windowsStore";
 // import { initializeFileSystem } from "./store/fileSystemStore";
 import styles from "./App.module.css";
@@ -17,23 +18,27 @@ function App() {
   );
 
   return (
-    <div className={styles.desktop}>
-      {/* <Desktop /> */}
+    <div className={styles.mainCon}>
+      <TopMenu />
 
-      {/* Windows */}
-      {openWindows.map((windowState) => (
-        <Window
-          key={windowState.id}
-          id={windowState.id}
-          title={windowState.title}
-          component={windowState.component}
-          initialPosition={windowState.position}
-          initialSize={windowState.size}
-          currentState={windowState.state}
-          zIndex={windowState.zIndex}
-          props={windowState.props}
-        />
-      ))}
+      <div className={styles.desktop}>
+        {/* <Desktop /> */}
+
+        {/* Windows */}
+        {openWindows.map((windowState) => (
+          <Window
+            key={windowState.id}
+            id={windowState.id}
+            title={windowState.title}
+            component={windowState.component}
+            initialPosition={windowState.position}
+            initialSize={windowState.size}
+            currentState={windowState.state}
+            zIndex={windowState.zIndex}
+            props={windowState.props}
+          />
+        ))}
+      </div>
 
       <Dock />
     </div>

@@ -20,7 +20,6 @@ interface WindowContainerProps {
 
 const WindowContainer: React.FC<WindowContainerProps> = ({
   id,
-  title,
   position = { x: 100, y: 100 },
   size = { width: 600, height: 400 },
   currentState,
@@ -164,7 +163,12 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   if (currentState === "maximized") {
     rndConfig = {
       ...rndConfig,
-      size: { width: windowSize.width, height: windowSize.height },
+      // When maximized, fill the desktop area but leave space for the dock
+      size: {
+        width: windowSize.width,
+        // Subtract dock height (approx 70px) to prevent window from going below dock
+        height: windowSize.height - 75,
+      },
       position: { x: 0, y: 0 },
       enableResizing: false,
       disableDragging: true,
@@ -211,12 +215,12 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
             className={`${styles.controlButton} ${styles.closeButton}`}
             onClick={() => closeWindow(id)}
             onMouseDown={(e) => e.stopPropagation()}
-          ></div>
+          />
           <div
             className={`${styles.controlButton} ${styles.minimizeButton}`}
             onClick={() => minimizeWindow(id)}
             onMouseDown={(e) => e.stopPropagation()}
-          ></div>
+          />
           <div
             className={`${styles.controlButton} ${styles.maximizeButton}`}
             onClick={greenButtonAction}
@@ -225,9 +229,9 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
                 currentState === "maximized" ? "#00a03f" : "#00ca4e",
             }}
             onMouseDown={(e) => e.stopPropagation()}
-          ></div>
+          />
         </div>
-        <span className={styles.windowTitle}>{title}</span>
+        {/* <span className={styles.windowTitle}>{title}</span> */}
       </div>
 
       {/* Content Area */}
