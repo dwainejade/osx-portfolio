@@ -1,7 +1,7 @@
 [
     {
-        "id": "project-1",
-        "title": "E-commerce Platform",
+        "id": "city-builder",
+        "title": "MetroTopia: City Builder",
         "description": "A fully responsive e-commerce site with cart functionality and payment processing.",
         "filePath": "/content/projects/project-1.md",
         "tags": [
@@ -13,8 +13,8 @@
         ]
     },
     {
-        "id": "project-2",
-        "title": "Weather Dashboard",
+        "id": "solar-sim",
+        "title": "Solar System Interactive",
         "description": "Real-time weather application that displays current conditions and forecasts for any location.",
         "filePath": "/content/projects/project-1.md",
         "tags": [
