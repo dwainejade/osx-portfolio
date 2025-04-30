@@ -18,7 +18,7 @@
 }
 
 .titleBar {
-  height: 24px;
+  height: 34px;
   background-color: #e0e0e0;
   border-bottom: 1px solid #d0d0d0;
   display: flex;
@@ -32,13 +32,13 @@
 
 .windowControls {
   display: flex;
-  gap: 6px;
+  gap: 10px;
   z-index: 10; /* Ensure buttons are clickable */
 }
 
 .controlButton {
-  width: 12px;
-  height: 12px;
+  width: 15px;
+  height: 15px;
   border-radius: 50%;
   /* cursor: pointer; */
   transition: background-color 0.1s ease;
