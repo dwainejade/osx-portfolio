@@ -18,6 +18,7 @@ This project creates a portfolio website that mimics the look and feel of the ma
   - [x] Window controls (close, minimize, maximize)
   - [x] Z-index management (windows stack properly)
 - [x] Smooth animations
+- [x] Top menu
 - [] Multiple window types:
   - [ ] About Me window
   - [ ] Projects showcase window
@@ -37,6 +38,8 @@ This project creates a portfolio website that mimics the look and feel of the ma
 - [ ] Browser window with embedded portfolio pages
 - [ ] Interactive notifications
 - [ ] Spotlight-style search functionality
+- [ ] Widgets for desktop
+- [ ] Sidebar
 
 ## Technologies
 
