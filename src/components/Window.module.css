@@ -74,19 +74,21 @@
 
 .navButton {
   width: 24px;
-  height: 18px;
-  font-size: 14px;
+  height: 24px;
+  font-size: 24px;
   line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #e8e8e8;
-  border: 1px solid #d0d0d0;
-  border-radius: 3px;
-  cursor: pointer;
-  color: #555;
+  background: none;
+  /* border: 1px solid #d0d0d0; */
+  /* border-radius: 3px; */
+  /* cursor: pointer; */
+  color: #222;
   padding: 0;
-  transition: background-color 0.1s ease;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
 }
 
 .navButton:hover:not(.navButtonDisabled) {
@@ -94,7 +96,7 @@
 }
 
 .navButtonDisabled {
-  opacity: 0.5;
+  opacity: 0.2;
   cursor: default;
 }
 
