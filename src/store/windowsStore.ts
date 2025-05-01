@@ -17,6 +17,11 @@ interface WindowSize {
 
 export type WindowStateValue = "normal" | "minimized" | "maximized";
 
+interface NavigationState {
+  history: any[]; // Store navigation history (can be component states, routes, etc.)
+  currentIndex: number; // Current position in history
+}
+
 export interface WindowState {
   id: string;
   title: string;
@@ -28,12 +33,15 @@ export interface WindowState {
   prevSize?: { width: number; height: number }; // Store size before maximize
   zIndex: number; // Add z-index for layering (MVP Extra Feature)
   props?: Record<string, any>; // Add props to store component-specific properties
+  navigation?: NavigationState; // Add navigation state
 }
 
 interface WindowsStoreState {
   openWindows: WindowState[];
   nextDefaultPositionOffset: number;
   lastZIndex: number;
+
+  // Window management
   openWindow: (
     id: string,
     title: string,
@@ -45,10 +53,19 @@ interface WindowsStoreState {
   closeWindow: (id: string) => void;
   minimizeWindow: (id: string) => void;
   maximizeWindow: (id: string) => void;
-  restoreWindow: (id: string) => void; // Ensure this exists
-  bringWindowToFront: (id: string) => void; // Ensure this exists
-  updateWindowPosition: (id: string, position: WindowPosition) => void; // Assuming exists
-  updateWindowSize: (id: string, size: WindowSize) => void; // Assuming exists
+  restoreWindow: (id: string) => void;
+  bringWindowToFront: (id: string) => void;
+  updateWindowPosition: (id: string, position: WindowPosition) => void;
+  updateWindowSize: (id: string, size: WindowSize) => void;
+  updateWindowTitle: (id: string, title: string) => void;
+
+  // Navigation functions
+  navigateWindowTo: (id: string, data: any) => void;
+  navigateWindowBack: (id: string) => void;
+  navigateWindowForward: (id: string) => void;
+  canNavigateBack: (id: string) => boolean;
+  canNavigateForward: (id: string) => boolean;
+  initializeWindowNavigation: (id: string, initialData?: any) => void;
 }
 
 const useWindowsStore = create<WindowsStoreState>((set, get) => ({
@@ -129,11 +146,28 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
       state: "normal",
       zIndex: newZIndex,
       props, // Assign the highest z-index
+      navigation: {
+        history: [],
+        currentIndex: -1,
+      },
     };
 
     set((state) => ({
       openWindows: [...state.openWindows, newWindow],
     }));
+
+    // Initialize window navigation if appropriate
+    if (
+      props &&
+      (component === "markdown" ||
+        component === "projects-list" ||
+        component === "blog-list")
+    ) {
+      // We can use setTimeout to ensure the window is added to state first
+      setTimeout(() => {
+        get().initializeWindowNavigation(id, props);
+      }, 0);
+    }
   },
 
   closeWindow: (id) => {
@@ -259,6 +293,234 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
 
     // Log for debugging
     console.log(`Size updated for window ${id}:`, size);
+  },
+
+  // --- UPDATE WINDOW TITLE ---
+  updateWindowTitle: (id, title) => {
+    set((state) => ({
+      openWindows: state.openWindows.map((window) =>
+        window.id === id
+          ? {
+              ...window,
+              title,
+            }
+          : window
+      ),
+    }));
+
+    console.log(`Title updated for window ${id}:`, title);
+  },
+
+  // --- NAVIGATION FUNCTIONS ---
+
+  // Initialize window navigation state
+  initializeWindowNavigation: (id, initialData) => {
+    if (!initialData) return;
+
+    set((state) => {
+      const windowToUpdate = state.openWindows.find((w) => w.id === id);
+      if (!windowToUpdate) return state;
+
+      return {
+        openWindows: state.openWindows.map((window) =>
+          window.id === id
+            ? {
+                ...window,
+                navigation: {
+                  history: [initialData],
+                  currentIndex: 0,
+                },
+              }
+            : window
+        ),
+      };
+    });
+
+    console.log(`Navigation initialized for window ${id}`);
+  },
+
+  // Navigate to a new state (adds to history)
+  navigateWindowTo: (id, data) => {
+    set((state) => {
+      const windowToUpdate = state.openWindows.find((w) => w.id === id);
+      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+
+      const { navigation } = windowToUpdate;
+
+      // Create new history array by cutting off any forward history and adding new entry
+      const newHistory = [
+        ...navigation.history.slice(0, navigation.currentIndex + 1),
+        data,
+      ];
+
+      // Log for debugging
+      console.log("Navigating to new state:", data);
+      console.log("New history:", newHistory);
+
+      // Update navigation state and props
+      return {
+        openWindows: state.openWindows.map((window) =>
+          window.id === id
+            ? {
+                ...window,
+                navigation: {
+                  history: newHistory,
+                  currentIndex: newHistory.length - 1,
+                },
+                props: data,
+                title: data.title || window.title,
+              }
+            : window
+        ),
+      };
+    });
+
+    console.log(`Navigated to new state in window ${id}`);
+  },
+
+  // Navigate back
+  navigateWindowBack: (id) => {
+    set((state) => {
+      const windowToUpdate = state.openWindows.find((w) => w.id === id);
+      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+
+      const { navigation } = windowToUpdate;
+
+      // Check if we can navigate back
+      if (navigation.currentIndex <= 0) return state;
+
+      // Decrement index
+      const newIndex = navigation.currentIndex - 1;
+
+      // Get the previous data
+      const previousData = navigation.history[newIndex];
+
+      // Update window props with the previous data
+      return {
+        openWindows: state.openWindows.map((window) =>
+          window.id === id
+            ? {
+                ...window,
+                navigation: {
+                  ...navigation,
+                  currentIndex: newIndex,
+                },
+                props: {
+                  ...window.props,
+                  ...previousData,
+                },
+                title: previousData.title || window.title,
+              }
+            : window
+        ),
+      };
+    });
+
+    console.log(`Navigated back in window ${id}`);
+  }, // Updated navigation functions in windowsStore.ts
+
+  // Navigate back
+  navigateWindowBack: (id) => {
+    set((state) => {
+      const windowToUpdate = state.openWindows.find((w) => w.id === id);
+      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+
+      const { navigation } = windowToUpdate;
+
+      // Check if we can navigate back
+      if (navigation.currentIndex <= 0) return state;
+
+      // Decrement index
+      const newIndex = navigation.currentIndex - 1;
+
+      // Get the previous data
+      const previousData = navigation.history[newIndex];
+
+      // Log for debugging
+      console.log("Navigating back to:", previousData);
+
+      // Update window props and title
+      return {
+        openWindows: state.openWindows.map((window) =>
+          window.id === id
+            ? {
+                ...window,
+                navigation: {
+                  ...navigation,
+                  currentIndex: newIndex,
+                },
+                // Replace entire props object to ensure component gets new props
+                props: previousData,
+                title: previousData.title || window.title,
+              }
+            : window
+        ),
+      };
+    });
+
+    console.log(`Navigated back in window ${id}`);
+  },
+
+  // Navigate forward
+  navigateWindowForward: (id) => {
+    set((state) => {
+      const windowToUpdate = state.openWindows.find((w) => w.id === id);
+      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+
+      const { navigation } = windowToUpdate;
+
+      // Check if we can navigate forward
+      if (navigation.currentIndex >= navigation.history.length - 1)
+        return state;
+
+      // Increment index
+      const newIndex = navigation.currentIndex + 1;
+
+      // Get the next data
+      const nextData = navigation.history[newIndex];
+
+      // Log for debugging
+      console.log("Navigating forward to:", nextData);
+
+      // Update window props and title
+      return {
+        openWindows: state.openWindows.map((window) =>
+          window.id === id
+            ? {
+                ...window,
+                navigation: {
+                  ...navigation,
+                  currentIndex: newIndex,
+                },
+                // Replace entire props object to ensure component gets new props
+                props: nextData,
+                title: nextData.title || window.title,
+              }
+            : window
+        ),
+      };
+    });
+
+    console.log(`Navigated forward in window ${id}`);
+  },
+
+  // Check if can navigate back
+  canNavigateBack: (id) => {
+    const windowToCheck = get().openWindows.find((w) => w.id === id);
+    if (!windowToCheck || !windowToCheck.navigation) return false;
+
+    return windowToCheck.navigation.currentIndex > 0;
+  },
+
+  // Check if can navigate forward
+  canNavigateForward: (id) => {
+    const windowToCheck = get().openWindows.find((w) => w.id === id);
+    if (!windowToCheck || !windowToCheck.navigation) return false;
+
+    return (
+      windowToCheck.navigation.currentIndex <
+      windowToCheck.navigation.history.length - 1
+    );
   },
 }));
 

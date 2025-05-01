@@ -3,6 +3,30 @@
   padding: 1.5rem;
   height: 100%;
   background-color: #f9f9f9;
+  overflow-y: auto;
+}
+
+.contentDetailView {
+  padding: 1.5rem;
+  height: 100%;
+  background-color: #f9f9f9;
+  overflow-y: auto;
+}
+
+.detailsBackButton {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #333;
+  transition: background-color 0.2s;
+}
+
+.detailsBackButton:hover {
+  background-color: #e0e0e0;
 }
 
 .loadingContainer {
@@ -101,6 +125,13 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.projectCard:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .imageContainer {
@@ -131,12 +162,14 @@
   border-radius: 8px;
   padding: 1.5rem;
   box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
-  /* cursor: pointer; */
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-/* .blogCard:hover {
+.blogCard:hover {
+  transform: translateY(-3px);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-} */
+}
 
 /* Shared styles */
 .itemContent {

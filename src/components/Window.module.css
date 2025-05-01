@@ -18,7 +18,7 @@
 }
 
 .titleBar {
-  height: 34px;
+  height: 24px;
   background-color: #e0e0e0;
   border-bottom: 1px solid #d0d0d0;
   display: flex;
@@ -32,13 +32,13 @@
 
 .windowControls {
   display: flex;
-  gap: 10px;
+  gap: 6px;
   z-index: 10; /* Ensure buttons are clickable */
 }
 
 .controlButton {
-  width: 15px;
-  height: 15px;
+  width: 12px;
+  height: 12px;
   border-radius: 50%;
   /* cursor: pointer; */
   transition: background-color 0.1s ease;
@@ -65,6 +65,39 @@
   background-color: #00a03f; /* Darker green */
 }
 
+/* Navigation Buttons */
+.navigationButtons {
+  display: flex;
+  margin-left: 16px;
+  gap: 2px;
+}
+
+.navButton {
+  width: 24px;
+  height: 18px;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e8e8e8;
+  border: 1px solid #d0d0d0;
+  border-radius: 3px;
+  cursor: pointer;
+  color: #555;
+  padding: 0;
+  transition: background-color 0.1s ease;
+}
+
+.navButton:hover:not(.navButtonDisabled) {
+  background-color: #d8d8d8;
+}
+
+.navButtonDisabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
 .windowTitle {
   flex-grow: 1;
   text-align: center;
@@ -74,7 +107,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   margin-left: 8px;
-  margin-right: calc(12px * 3 + 6px * 2 + 8px);
+  margin-right: 8px;
 }
 
 .windowContent {
@@ -187,13 +220,13 @@
 
 /* Update maximized window to not extend past the dock */
 .maximized {
-  width: calc(100% - 1px) !important;
+  width: 100% !important;
   height: calc(
-    100% - 76.5px
+    100% - 75px
   ) !important; /* Account for dock height and padding */
-  top: 0.5px !important;
-  left: 0.5px !important;
-  /* border-radius: 0 !important; */
+  top: 0 !important;
+  left: 0 !important;
+  border-radius: 0 !important;
 }
 
 /* Apply transitions only to certain states to improve performance */

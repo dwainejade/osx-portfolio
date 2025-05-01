@@ -38,9 +38,16 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   const bringWindowToFront = useWindowsStore(
     (state) => state.bringWindowToFront
   );
-
-  // Reference to track double-click
-  const lastClickTime = useRef<number>(0);
+  const navigateWindowBack = useWindowsStore(
+    (state) => state.navigateWindowBack
+  );
+  const navigateWindowForward = useWindowsStore(
+    (state) => state.navigateWindowForward
+  );
+  const canNavigateBack = useWindowsStore((state) => state.canNavigateBack(id));
+  const canNavigateForward = useWindowsStore((state) =>
+    state.canNavigateForward(id)
+  );
 
   // Get current window size from our custom hook
   const windowSize = useWindowResize();
@@ -147,28 +154,28 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     restoreWindow(id);
   };
 
-  // --- Handle Double Click on Title Bar ---
-  const handleTitleBarClick = (e: React.MouseEvent) => {
-    // Only handle clicks directly on the title bar, not on the control buttons
-    const targetElement = e.target as HTMLElement;
-    if (targetElement.closest(`.${styles.controlButton}`)) {
-      return;
+  // --- Navigation Actions ---
+
+  const handleNavigateBack = () => {
+    console.log(`Attempting to navigate back for window ${id}`);
+
+    // Check if navigation is possible first
+    if (canNavigateBack) {
+      navigateWindowBack(id);
+    } else {
+      console.log(`Cannot navigate back for window ${id}`);
     }
+  };
 
-    const now = Date.now();
-    const timeSinceLastClick = now - lastClickTime.current;
+  const handleNavigateForward = () => {
+    console.log(`Attempting to navigate forward for window ${id}`);
 
-    // Check if this is a double click (within 300ms)
-    if (timeSinceLastClick < 300) {
-      // Toggle between maximized and normal state
-      if (currentState === "maximized") {
-        handleRestore();
-      } else {
-        handleMaximize();
-      }
+    // Check if navigation is possible first
+    if (canNavigateForward) {
+      navigateWindowForward(id);
+    } else {
+      console.log(`Cannot navigate forward for window ${id}`);
     }
-
-    lastClickTime.current = now;
   };
 
   // --- Rnd Configuration based on State ---
@@ -210,7 +217,10 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
 
   const handleMouseDownCapture = (e: React.MouseEvent<HTMLDivElement>) => {
     const targetElement = e.target as HTMLElement;
-    if (targetElement.closest(`.${styles.controlButton}`)) {
+    if (
+      targetElement.closest(`.${styles.controlButton}`) ||
+      targetElement.closest(`.${styles.navButton}`)
+    ) {
       return;
     }
     bringWindowToFront(id);
@@ -234,13 +244,10 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
         currentState === "maximized" ? styles.maximized : ""
       }`}
       onMouseDownCapture={handleMouseDownCapture}
-      cancel={`.${styles.controlButton}`} // Don't initiate drag from control buttons
+      cancel={`.${styles.controlButton}, .${styles.navButton}`} // Don't initiate drag from buttons
     >
       {/* Title Bar */}
-      <div
-        className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}
-        onClick={handleTitleBarClick}
-      >
+      <div className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}>
         <div className={styles.windowControls}>
           <div
             className={`${styles.controlButton} ${styles.closeButton}`}
@@ -262,6 +269,33 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
             onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
+
+        {/* Navigation Buttons */}
+        <div className={styles.navigationButtons}>
+          <button
+            className={`${styles.navButton} ${
+              !canNavigateBack ? styles.navButtonDisabled : ""
+            }`}
+            onClick={handleNavigateBack}
+            disabled={!canNavigateBack}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            ‹
+          </button>
+          <button
+            className={`${styles.navButton} ${
+              !canNavigateForward ? styles.navButtonDisabled : ""
+            }`}
+            onClick={handleNavigateForward}
+            disabled={!canNavigateForward}
+            onMouseDown={(e) => e.stopPropagation()}
+          >
+            ›
+          </button>
+        </div>
+
+        {/* Window Title */}
+        <span className={styles.windowTitle}>{title}</span>
       </div>
 
       {/* Content Area */}

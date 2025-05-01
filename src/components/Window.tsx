@@ -3,14 +3,9 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import WindowContainer from "./WindowContainer";
 import styles from "./Window.module.css";
-// import useWindowsStore from "../store/windowsStore";
+import useWindowsStore from "../store/windowsStore";
 import MarkdownWindow from "./windows/MarkdownWindow";
 import ContentListWindow from "./windows/ContentListWindow";
-// import AboutMeWindow from "./windows/AboutMeWindow";
-// import ProjectsWindow from "./windows/ProjectsWindow";
-// import ProjectDetailWindow from "./windows/ProjectDetailWindow";
-// import BlogWindow from "./windows/BlogWindow";
-// import BlogPostWindow from "./windows/BlogPostWindow";
 
 interface WindowProps {
   id: string;
@@ -78,6 +73,9 @@ const Window: React.FC<WindowProps> = ({
             type="projects"
             listPath={props?.listPath || "/content/projects/projects.json"}
             title={props?.title || "Projects"}
+            selectedItemId={props?.selectedItemId}
+            filePath={props?.filePath}
+            isDetail={props?.isDetail}
           />
         );
       case "blog-list":
@@ -86,6 +84,9 @@ const Window: React.FC<WindowProps> = ({
             type="blog"
             listPath={props?.listPath || "/content/blog/blog.json"}
             title={props?.title || "Blog"}
+            selectedItemId={props?.selectedItemId}
+            filePath={props?.filePath}
+            isDetail={props?.isDetail}
           />
         );
       // Add other window types here as needed
