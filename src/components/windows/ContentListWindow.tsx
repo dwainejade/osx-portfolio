@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import useWindowsStore from "../../store/windowsStore";
 import styles from "./ContentListWindow.module.css";
 import MarkdownWindow from "./MarkdownWindow";
-import useMarkdownLoader from "../../hooks/useMarkdownLoader";
+// import useMarkdownLoader from "../../hooks/useMarkdownLoader";
 
 interface ContentItem {
   id: string;

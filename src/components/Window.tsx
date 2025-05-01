@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import WindowContainer from "./WindowContainer";
 import styles from "./Window.module.css";
-import useWindowsStore from "../store/windowsStore";
+// import useWindowsStore from "../store/windowsStore";
 import MarkdownWindow from "./windows/MarkdownWindow";
 import ContentListWindow from "./windows/ContentListWindow";
 
