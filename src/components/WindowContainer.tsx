@@ -262,7 +262,6 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
             onMouseDown={(e) => e.stopPropagation()}
           />
         </div>
-        {/* <span className={styles.windowTitle}>{title}</span> */}
       </div>
 
       {/* Content Area */}

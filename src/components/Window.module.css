@@ -187,13 +187,13 @@
 
 /* Update maximized window to not extend past the dock */
 .maximized {
-  width: 100% !important;
+  width: calc(100% - 1px) !important;
   height: calc(
-    100% - 75px
+    100% - 76.5px
   ) !important; /* Account for dock height and padding */
-  top: 0 !important;
-  left: 0 !important;
-  border-radius: 0 !important;
+  top: 0.5px !important;
+  left: 0.5px !important;
+  /* border-radius: 0 !important; */
 }
 
 /* Apply transitions only to certain states to improve performance */
