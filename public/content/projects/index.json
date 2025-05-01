@@ -2,22 +2,23 @@
     {
         "id": "city-builder",
         "title": "MetroTopia: City Builder",
-        "description": "A fully responsive e-commerce site with cart functionality and payment processing.",
-        "filePath": "/content/projects/project-1.md",
-        "tags": [
+        "description": "A city-building simulation that we repurpose for a variety of needs, from ecology and biology to economics; scalable to different grade levels.",
+        "filePath": "/content/projects/city-builder.md",
+        "imageUrl": "/assets/projects/metrotopia/screenshot_2.webp",
+        "technologies": [
             "React",
-            "Redux",
-            "Node.js",
-            "MongoDB",
-            "Stripe"
+            "Zustand",
+            "Three.js",
+            "simulation"
         ]
     },
     {
         "id": "solar-sim",
         "title": "Solar System Interactive",
-        "description": "Real-time weather application that displays current conditions and forecasts for any location.",
-        "filePath": "/content/projects/project-1.md",
-        "tags": [
+        "description": "Tour the planets and moons of the solar system, as well as the asteroid belt; various other versions let students adjust orbits and object masses for...interesting results.",
+        "filePath": "/content/projects/city-builder.md",
+        "imageUrl": "/assets/projects/solar-sim/screenshot_2.webp",
+        "technologies": [
             "React",
             "OpenWeather API",
             "Chart.js",
@@ -25,11 +26,12 @@
         ]
     },
     {
-        "id": "project-3",
-        "title": "Task Management App",
-        "description": "Productivity application for managing tasks, projects, and team collaboration.",
-        "filePath": "/content/projects/project-1.md",
-        "tags": [
+        "id": "stock-market",
+        "title": "Stock Market Sim",
+        "description": "Start with $100 and see how far you can ride out success in a virtual stock market!",
+        "filePath": "/content/projects/city-builder.md",
+        "imageUrl": "/assets/projects/stock-sim/screenshot_1.webp",
+        "technologies": [
             "React",
             "TypeScript",
             "Firebase",
@@ -37,11 +39,38 @@
         ]
     },
     {
-        "id": "project-4",
-        "title": "Portfolio Website",
+        "id": "algebra-1",
+        "title": "Algebra Practice",
+        "description": "A tool to walk students through every step of randomly generated algebra problems; additional versions created for other algebra standards, geometry, and even K-5 math.",
+        "filePath": "/content/projects/city-builder.md",
+        "imageUrl": "/assets/projects/algebra-1/screenshot_1.webp",
+        "technologies": [
+            "React",
+            "TypeScript",
+            "Framer Motion",
+            "Zustand"
+        ]
+    },
+    {
+        "id": "js-playground",
+        "title": "JS Code Playground",
+        "description": "This is a lightweight code editor that features a built-in console for executing JavaScript code in real-time. It allows users to write, test, and debug simple code snippets directly in the editor.",
+        "filePath": "/content/projects/city-builder.md",
+        "imageUrl": "/assets/projects/js-playground/screenshot_1.webp",
+        "technologies": [
+            "React",
+            "TypeScript",
+            "Framer Motion",
+            "Zustand"
+        ]
+    },
+    {
+        "id": "geometry",
+        "title": "Geometry Interactive",
         "description": "macOS-inspired portfolio website built with React and TypeScript.",
-        "filePath": "/content/projects/project-1.md",
-        "tags": [
+        "filePath": "/content/projects/city-builder.md",
+        "imageUrl": "/assets/projects/geometry/screenshot_2.webp",
+        "technologies": [
             "React",
             "TypeScript",
             "Framer Motion",

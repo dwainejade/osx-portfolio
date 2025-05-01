@@ -42,16 +42,24 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
 
         const data = await response.json();
 
-        // Sort blog posts by date if they have dates
-        if (type === "blog") {
-          const sortedItems = [...data].sort((a, b) =>
-            a.date && b.date
-              ? new Date(b.date).getTime() - new Date(a.date).getTime()
-              : 0
-          );
-          setItems(sortedItems);
-        } else {
-          setItems(data);
+        // Sort data based on content type
+        switch (type) {
+          case "blog": // Sort blog posts by date (newest first)
+          {
+            const sortedItems = [...data].sort((a, b) =>
+              a.date && b.date
+                ? new Date(b.date).getTime() - new Date(a.date).getTime()
+                : 0
+            );
+            setItems(sortedItems);
+            break;
+          }
+          case "projects":
+            // Projects don't need special sorting (use as-is)
+            setItems(data);
+            break;
+          default:
+            setItems(data);
         }
       } catch (err) {
         console.error(`Error loading ${type}:`, err);
@@ -89,6 +97,87 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
     return <div className={styles.errorContainer}>{error}</div>;
   }
 
+  const renderContent = () => {
+    if (items.length === 0) {
+      return <div className={styles.emptyMessage}>No items found.</div>;
+    }
+
+    switch (type) {
+      case "projects":
+        return (
+          <div className={styles.projectsGrid}>
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className={styles.projectCard}
+                onClick={() => handleItemClick(item)}
+              >
+                {item.imageUrl && (
+                  <div className={styles.imageContainer}>
+                    <img
+                      src={item.imageUrl}
+                      alt={item.title}
+                      className={styles.itemImage}
+                    />
+                  </div>
+                )}
+                <div className={styles.itemContent}>
+                  <h3 className={styles.itemTitle}>{item.title}</h3>
+                  <p className={styles.itemDescription}>{item.description}</p>
+                  <div className={styles.tagsContainer}>
+                    {item.technologies?.map((tech, index) => (
+                      <span key={index} className={styles.tag}>
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+                  <button className={styles.viewButton}>View Project</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      case "blog":
+        return (
+          <div className={styles.blogList}>
+            {items.map((item) => (
+              <div
+                key={item.id}
+                className={styles.blogCard}
+                onClick={() => handleItemClick(item)}
+              >
+                <div className={styles.itemContent}>
+                  {item.date && (
+                    <div className={styles.itemDate}>
+                      {new Date(item.date).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </div>
+                  )}
+                  <h3 className={styles.itemTitle}>{item.title}</h3>
+                  <p className={styles.itemDescription}>{item.summary}</p>
+                  <div className={styles.tagsContainer}>
+                    {item.tags?.map((tag, index) => (
+                      <span key={index} className={styles.tag}>
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                  <button className={styles.viewButton}>Read More</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        );
+
+      default:
+        return <div className={styles.emptyMessage}>Invalid content type.</div>;
+    }
+  };
+
   return (
     <div className={styles.contentListWindow}>
       <div className={styles.header}>
@@ -96,68 +185,7 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
           {title || (type === "blog" ? "Blog" : "Projects")}
         </h2>
       </div>
-
-      {items.length === 0 ? (
-        <div className={styles.emptyMessage}>No items found.</div>
-      ) : (
-        <div
-          className={
-            type === "projects" ? styles.projectsGrid : styles.blogList
-          }
-        >
-          {items.map((item) => (
-            <div
-              key={item.id}
-              className={
-                type === "projects" ? styles.projectCard : styles.blogCard
-              }
-              onClick={() => handleItemClick(item)}
-            >
-              {item.imageUrl && type === "projects" && (
-                <div className={styles.imageContainer}>
-                  <img
-                    src={item.imageUrl}
-                    alt={item.title}
-                    className={styles.itemImage}
-                  />
-                </div>
-              )}
-
-              <div className={styles.itemContent}>
-                {type === "blog" && item.date && (
-                  <div className={styles.itemDate}>
-                    {new Date(item.date).toLocaleDateString("en-US", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </div>
-                )}
-
-                <h3 className={styles.itemTitle}>{item.title}</h3>
-
-                <p className={styles.itemDescription}>
-                  {type === "projects" ? item.description : item.summary}
-                </p>
-
-                <div className={styles.tagsContainer}>
-                  {(type === "projects" ? item.technologies : item.tags)?.map(
-                    (tag, index) => (
-                      <span key={index} className={styles.tag}>
-                        {tag}
-                      </span>
-                    )
-                  )}
-                </div>
-
-                <button className={styles.viewButton}>
-                  {type === "projects" ? "View Project" : "Read More"}
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 };
