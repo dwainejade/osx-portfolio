@@ -1,8 +1,7 @@
+// Modified ContentListWindow.tsx to include demo button
 import React, { useState, useEffect } from "react";
 import useWindowsStore from "../../store/windowsStore";
 import styles from "./ContentListWindow.module.css";
-import MarkdownWindow from "./MarkdownWindow";
-// import useMarkdownLoader from "../../hooks/useMarkdownLoader";
 
 interface ContentItem {
   id: string;
@@ -14,41 +13,25 @@ interface ContentItem {
   technologies?: string[];
   filePath: string;
   imageUrl?: string;
+  demoUrl?: string; // Added demoUrl property
 }
 
 interface ContentListWindowProps {
   type: "projects" | "blog";
   listPath: string;
   title?: string;
-  selectedItemId?: string;
-  filePath?: string;
-  isDetail?: boolean;
 }
 
 const ContentListWindow: React.FC<ContentListWindowProps> = ({
   type,
   listPath,
   title,
-  selectedItemId,
-  filePath,
-  isDetail,
 }) => {
   const [items, setItems] = useState<ContentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedItem, setSelectedItem] = useState<ContentItem | null>(null);
-  const [detailsContent, setDetailsContent] = useState<string>("");
-  const [detailsLoading, setDetailsLoading] = useState(false);
-  const [detailsError, setDetailsError] = useState<string | null>(null);
-
   const openWindow = useWindowsStore((state) => state.openWindow);
-  const updateWindowTitle = useWindowsStore((state) => state.updateWindowTitle);
-  const navigateWindowTo = useWindowsStore((state) => state.navigateWindowTo);
 
-  // Get the current window ID to update its title when showing details
-  const windowId = type === "projects" ? "code" : "browser";
-
-  // Load items list
   useEffect(() => {
     const loadItems = async () => {
       try {
@@ -72,19 +55,6 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
         } else {
           setItems(data);
         }
-
-        // If we have a selectedItemId from props, find and select that item
-        if (selectedItemId) {
-          const item = data.find((i: ContentItem) => i.id === selectedItemId);
-          if (item) {
-            setSelectedItem(item);
-
-            // If we're supposed to show details immediately, load the content
-            if (isDetail && item.filePath) {
-              loadItemContent(item);
-            }
-          }
-        }
       } catch (err) {
         console.error(`Error loading ${type}:`, err);
         setError(`Failed to load ${type}`);
@@ -94,120 +64,27 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
     };
 
     loadItems();
-  }, [type, listPath, selectedItemId, isDetail]);
-
-  // Effect to handle navigation props changes
-  useEffect(() => {
-    // If isDetail is true and we have a filePath, we should show the detail view
-    if (isDetail && filePath) {
-      // If we don't have a selectedItem yet, but have a selectedItemId, find that item
-      if (!selectedItem && selectedItemId && items.length > 0) {
-        const item = items.find((item) => item.id === selectedItemId);
-        if (item) {
-          setSelectedItem(item);
-        }
-      }
-
-      // Load content from filePath if not already loaded
-      if (!detailsContent || filePath !== selectedItem?.filePath) {
-        setDetailsLoading(true);
-        fetch(filePath)
-          .then((response) => {
-            if (!response.ok) {
-              throw new Error(`Failed to load content: ${response.status}`);
-            }
-            return response.text();
-          })
-          .then((content) => {
-            setDetailsContent(content);
-            setDetailsError(null);
-          })
-          .catch((err) => {
-            console.error(`Error loading content:`, err);
-            setDetailsError(`Failed to load content: ${err.message}`);
-          })
-          .finally(() => {
-            setDetailsLoading(false);
-          });
-      }
-    } else {
-      // If isDetail is false, ensure we're showing the list view
-      if (selectedItem) {
-        setSelectedItem(null);
-      }
-    }
-  }, [isDetail, filePath, selectedItemId, items, selectedItem, detailsContent]);
-
-  // Function to load the content for an item
-  const loadItemContent = (item: ContentItem) => {
-    setDetailsLoading(true);
-
-    fetch(item.filePath)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to load content: ${response.status}`);
-        }
-        return response.text();
-      })
-      .then((content) => {
-        setDetailsContent(content);
-        setDetailsError(null);
-      })
-      .catch((err) => {
-        console.error(`Error loading content:`, err);
-        setDetailsError(`Failed to load content: ${err.message}`);
-      })
-      .finally(() => {
-        setDetailsLoading(false);
-      });
-  };
+  }, [type, listPath]);
 
   const handleItemClick = (item: ContentItem) => {
-    console.log("Item clicked:", item);
-
-    // Update navigation history
-    navigateWindowTo(windowId, {
-      type,
-      listPath,
-      title: item.title,
-      selectedItemId: item.id,
-      filePath: item.filePath,
-      isDetail: true,
-    });
-
-    // Update UI state
-    setSelectedItem(item);
-    setDetailsLoading(true);
-
-    // Update the window title
-    updateWindowTitle(windowId, item.title);
-
-    // Load the markdown content
-    loadItemContent(item);
-  };
-
-  const handleBackClick = () => {
-    console.log("Back button clicked");
-
-    // Update navigation history
-    navigateWindowTo(windowId, {
-      type,
-      listPath,
-      title: title || (type === "blog" ? "Blog" : "Projects"),
-      isDetail: false,
-    });
-
-    // Update UI state
-    setSelectedItem(null);
-
-    // Reset the window title
-    updateWindowTitle(
-      windowId,
-      title || (type === "blog" ? "Blog" : "Projects")
+    console.log(item);
+    openWindow(
+      `${type}-${item.id}`,
+      item.title,
+      "markdown", // Use markdown component for all content
+      { x: 150, y: 80 },
+      { width: 700, height: 500 },
+      { filePath: item.filePath }
     );
   };
 
-  // If loading the initial items list
+  const handleDemoClick = (e: React.MouseEvent, demoUrl?: string) => {
+    e.stopPropagation(); // Prevent triggering the parent card's onClick
+    if (demoUrl) {
+      window.open(demoUrl, "_blank");
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -217,37 +94,10 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
     );
   }
 
-  // If there was an error loading the list
   if (error) {
     return <div className={styles.errorContainer}>{error}</div>;
   }
 
-  // If a project is selected or isDetail is true, show details
-  if (selectedItem || isDetail) {
-    return (
-      <div className={styles.contentDetailView}>
-        <div className={styles.detailsBackButton} onClick={handleBackClick}>
-          ← Back to {type === "projects" ? "Projects" : "Blog"}
-        </div>
-
-        {detailsLoading ? (
-          <div className={styles.loadingContainer}>
-            <div className={styles.spinner}></div>
-            <p>Loading content...</p>
-          </div>
-        ) : detailsError ? (
-          <div className={styles.errorContainer}>{detailsError}</div>
-        ) : (
-          <MarkdownWindow
-            content={detailsContent}
-            title={selectedItem ? selectedItem.title : title}
-          />
-        )}
-      </div>
-    );
-  }
-
-  // Otherwise, show the list of items
   return (
     <div className={styles.contentListWindow}>
       <div className={styles.header}>
@@ -309,9 +159,21 @@ const ContentListWindow: React.FC<ContentListWindowProps> = ({
                   )}
                 </div>
 
-                <button className={styles.viewButton}>
-                  {type === "projects" ? "View Project" : "Read More"}
-                </button>
+                {type === "projects" ? (
+                  <div className={styles.buttonContainer}>
+                    <button className={styles.viewButton}>View Details</button>
+                    {item.demoUrl && (
+                      <button
+                        className={`${styles.viewButton} ${styles.demoButton}`}
+                        onClick={(e) => handleDemoClick(e, item.demoUrl)}
+                      >
+                        View Demo
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <button className={styles.viewButton}>Read More</button>
+                )}
               </div>
             </div>
           ))}
