@@ -5,7 +5,7 @@
         "description": "A city-building simulation that we repurpose for a variety of needs, from ecology and biology to economics; scalable to different grade levels.",
         "filePath": "/content/projects/city-builder.md",
         "imageUrl": "/assets/projects/metrotopia/screenshot_2.webp",
-        "demoUrl": "https://interactives.strongmind.com/geometry-interactive/mix/hybrid",
+        "demoUrl": "https://metrotopia.vercel.app/",
         "technologies": [
             "React",
             "Zustand",
@@ -19,7 +19,7 @@
         "description": "Tour the planets and moons of the solar system, as well as the asteroid belt; various other versions let students adjust orbits and object masses for...interesting results.",
         "filePath": "/content/projects/city-builder.md",
         "imageUrl": "/assets/projects/solar-sim/screenshot_2.webp",
-        "demoUrl": "https://interactives.strongmind.com/geometry-interactive/mix/hybrid",
+        "demoUrl": "https://devinteractives.strongmind.com/solar-system-interactive/main/",
         "technologies": [
             "React",
             "OpenWeather API",
@@ -33,7 +33,7 @@
         "description": "Start with $100 and see how far you can ride out success in a virtual stock market!",
         "filePath": "/content/projects/city-builder.md",
         "imageUrl": "/assets/projects/stock-sim/screenshot_1.webp",
-        "demoUrl": "https://interactives.strongmind.com/geometry-interactive/mix/hybrid",
+        "demoUrl": "https://devinteractives.strongmind.com/stock-market-sim/",
         "technologies": [
             "React",
             "TypeScript",
@@ -47,7 +47,7 @@
         "description": "A tool to walk students through every step of randomly generated algebra problems; additional versions created for other algebra standards, geometry, and even K-5 math.",
         "filePath": "/content/projects/city-builder.md",
         "imageUrl": "/assets/projects/algebra-1/screenshot_1.webp",
-        "demoUrl": "https://interactives.strongmind.com/geometry-interactive/mix/hybrid",
+        "demoUrl": "https://devinteractives.strongmind.com/algebra-interactive/public/algebra/linear-equations-one-hybrid/",
         "technologies": [
             "React",
             "TypeScript",
@@ -61,7 +61,7 @@
         "description": "This is a lightweight code editor that features a built-in console for executing JavaScript code in real-time. It allows users to write, test, and debug simple code snippets directly in the editor.",
         "filePath": "/content/projects/city-builder.md",
         "imageUrl": "/assets/projects/js-playground/screenshot_1.webp",
-        "demoUrl": "https://interactives.strongmind.com/geometry-interactive/mix/hybrid",
+        "demoUrl": "https://devinteractives.strongmind.com/js-coding-interactive/public/formative/2-20/",
         "technologies": [
             "React",
             "TypeScript",

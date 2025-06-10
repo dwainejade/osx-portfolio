@@ -80,7 +80,7 @@ const TopMenu: React.FC = () => {
   const menuData: MenuData[] = [
     {
       id: "apple",
-      label: "🔵", // Apple symbol
+      label: "🔵", // logo
       items: [
         {
           id: "about",
