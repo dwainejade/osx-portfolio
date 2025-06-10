@@ -6,6 +6,7 @@ import TopMenu from "./components/TopMenu";
 import useWindowsStore from "./store/windowsStore";
 // import { initializeFileSystem } from "./store/fileSystemStore";
 import styles from "./App.module.css";
+import Wallpaper from "./components/Wallpaper";
 
 function App() {
   // Initialize file system on first render
@@ -20,6 +21,9 @@ function App() {
   return (
     <div className={styles.mainCon}>
       <TopMenu />
+
+      {/* wallpaper */}
+      <Wallpaper src={"/assets/wallpapers/tahoe-light.webp"} />
 
       <div className={styles.desktop}>
         {/* <Desktop /> */}

@@ -1,9 +1,20 @@
+// src/store/windowsStore.ts with enhanced debugging
 import { create } from "zustand";
 
-// Assuming these constants and types exist elsewhere
+// Constants
 const DEFAULT_WINDOW_WIDTH = 600;
 const DEFAULT_WINDOW_HEIGHT = 400;
 const OFFSET_INCREMENT = 30;
+
+// Debug flag - set to true to enable detailed logging
+const DEBUG = true;
+
+// Debug logging utility
+const debugLog = (...args: any[]) => {
+  if (DEBUG) {
+    console.log(`[WindowsStore]`, ...args);
+  }
+};
 
 interface WindowPosition {
   x: number;
@@ -18,8 +29,8 @@ interface WindowSize {
 export type WindowStateValue = "normal" | "minimized" | "maximized";
 
 interface NavigationState {
-  history: any[]; // Store navigation history (can be component states, routes, etc.)
-  currentIndex: number; // Current position in history
+  history: any[];
+  currentIndex: number;
 }
 
 export interface WindowState {
@@ -27,13 +38,13 @@ export interface WindowState {
   title: string;
   component: string;
   position: { x: number; y: number };
-  size: { width: number; height: number }; // Add size to state
-  state: WindowStateValue; // Add display state
-  prevPosition?: { x: number; y: number }; // Store position before maximize
-  prevSize?: { width: number; height: number }; // Store size before maximize
-  zIndex: number; // Add z-index for layering (MVP Extra Feature)
-  props?: Record<string, any>; // Add props to store component-specific properties
-  navigation?: NavigationState; // Add navigation state
+  size: { width: number; height: number };
+  state: WindowStateValue;
+  prevPosition?: { x: number; y: number };
+  prevSize?: { width: number; height: number };
+  zIndex: number;
+  props?: Record<string, any>;
+  navigation?: NavigationState;
 }
 
 interface WindowsStoreState {
@@ -68,10 +79,102 @@ interface WindowsStoreState {
   initializeWindowNavigation: (id: string, initialData?: any) => void;
 }
 
+// Helper function to find non-overlapping positions
+function findNonOverlappingPosition(
+  initialPosition: WindowPosition,
+  size: WindowSize,
+  existingWindows: WindowState[]
+): WindowPosition {
+  debugLog("Finding non-overlapping position from:", initialPosition);
+  
+  // If no windows are open, just use the initial position
+  if (existingWindows.length === 0) {
+    debugLog("No existing windows, using initial position");
+    return initialPosition;
+  }
+
+  let newPosition = { ...initialPosition };
+  let attempts = 0;
+  const MAX_ATTEMPTS = 25; // Limit attempts to prevent infinite loop
+  
+  // Get viewport dimensions
+  const safeInnerWidth = typeof window !== "undefined" ? window.innerWidth : 1024;
+  const safeInnerHeight = typeof window !== "undefined" ? window.innerHeight : 768;
+  
+  debugLog("Viewport size:", { width: safeInnerWidth, height: safeInnerHeight });
+  
+  // Function to check if a window overlaps with another
+  const checkOverlap = (posX: number, posY: number) => {
+    // Define the rectangle of the new window
+    const newRect = {
+      left: posX,
+      right: posX + size.width,
+      top: posY,
+      bottom: posY + size.height
+    };
+    
+    // Check for overlap with any existing window
+    for (const win of existingWindows) {
+      // Skip minimized windows
+      if (win.state === "minimized") continue;
+      
+      // Define the rectangle of the existing window
+      const existingRect = {
+        left: win.position.x,
+        right: win.position.x + win.size.width,
+        top: win.position.y,
+        bottom: win.position.y + win.size.height
+      };
+      
+      // Check for overlap (simplified - just check if centers are close enough)
+      const newCenterX = (newRect.left + newRect.right) / 2;
+      const newCenterY = (newRect.top + newRect.bottom) / 2;
+      const existingCenterX = (existingRect.left + existingRect.right) / 2;
+      const existingCenterY = (existingRect.top + existingRect.bottom) / 2;
+      
+      const centerTooClose = 
+        Math.abs(newCenterX - existingCenterX) < 50 &&
+        Math.abs(newCenterY - existingCenterY) < 50;
+      
+      if (centerTooClose) {
+        debugLog("Overlap detected with window:", win.id, "at position:", { x: posX, y: posY });
+        return true;
+      }
+    }
+    
+    return false;
+  };
+  
+  // Try to find a non-overlapping position
+  while (checkOverlap(newPosition.x, newPosition.y) && attempts < MAX_ATTEMPTS) {
+    attempts++;
+    
+    // Apply offset with a cascading effect
+    newPosition.x += OFFSET_INCREMENT;
+    newPosition.y += OFFSET_INCREMENT;
+    
+    debugLog("Attempt", attempts, "- Checking position:", newPosition);
+    
+    // Ensure window stays within viewport bounds (with margin for dock)
+    if (newPosition.x + size.width > safeInnerWidth - 20) {
+      debugLog("Position would go off-screen right, resetting x");
+      newPosition.x = 20;
+    }
+    
+    if (newPosition.y + size.height > safeInnerHeight - 100) {
+      debugLog("Position would go off-screen bottom, resetting y");
+      newPosition.y = 40;
+    }
+  }
+  
+  debugLog("Final position after", attempts, "attempts:", newPosition);
+  return newPosition;
+}
+
 const useWindowsStore = create<WindowsStoreState>((set, get) => ({
   openWindows: [],
   nextDefaultPositionOffset: 0,
-  lastZIndex: 0, // Initialize z-index counter
+  lastZIndex: 0,
 
   openWindow: (
     id,
@@ -81,60 +184,70 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
     userProvidedSize,
     props
   ) => {
+    debugLog("Opening window:", { id, title, component });
+    
     const { openWindows, nextDefaultPositionOffset, lastZIndex } = get();
-
+    
+    // Check if window already exists
     const existingWindow = openWindows.find((window) => window.id === id);
 
-    // --- MODIFICATION START ---
     if (existingWindow) {
-      // Check if the existing window is minimized
+      debugLog("Window already exists:", existingWindow);
+      
       if (existingWindow.state === "minimized") {
-        // Restore the minimized window instead of just bringing to front
-        console.log(`Window ${id} is minimized, restoring...`);
-        // Call the dedicated restore function (which should also handle zIndex)
+        debugLog("Window is minimized, restoring");
         get().restoreWindow(id);
       } else {
-        // If it exists but is normal or maximized, just bring it to the front
-        console.log(
-          `Window ${id} is already open (${existingWindow.state}), bringing to front.`
-        );
+        debugLog("Window is open, bringing to front");
         get().bringWindowToFront(id);
       }
-      return; // Stop execution, don't create a new window
+      return;
     }
-    // --- MODIFICATION END ---
 
-    // --- Logic for creating a NEW window (remains the same) ---
-    let windowPosition = userProvidedPosition;
+    debugLog("Creating new window");
+    
+    // Configure window size
     const windowSize = userProvidedSize || {
       width: DEFAULT_WINDOW_WIDTH,
       height: DEFAULT_WINDOW_HEIGHT,
     };
+    
+    debugLog("Window size:", windowSize);
 
+    // Configure window position
+    let windowPosition = userProvidedPosition;
+    
     if (!windowPosition) {
-      // Calculate centered position with offset
-      const safeInnerWidth =
-        typeof window !== "undefined" ? window.innerWidth : 1024; // Fallback for SSR
-      const safeInnerHeight =
-        typeof window !== "undefined" ? window.innerHeight : 768; // Fallback for SSR
-      const centerX = safeInnerWidth / 2 - windowSize.width / 2;
-      const centerY = safeInnerHeight / 2 - windowSize.height / 2;
-
-      windowPosition = {
-        x: centerX + nextDefaultPositionOffset,
-        y: centerY + nextDefaultPositionOffset,
-      };
-
-      // Update offset for the next window
-      set((state) => ({
-        nextDefaultPositionOffset:
-          (state.nextDefaultPositionOffset + OFFSET_INCREMENT) %
-          (5 * OFFSET_INCREMENT), // Cycle offset
-      }));
+      debugLog("No position provided, calculating position");
+      
+      // Get viewport dimensions
+      const safeInnerWidth = typeof window !== "undefined" ? window.innerWidth : 1024;
+      const safeInnerHeight = typeof window !== "undefined" ? window.innerHeight : 768;
+      
+      // Start with center position
+      const centerX = Math.max(0, (safeInnerWidth / 2) - (windowSize.width / 2));
+      const centerY = Math.max(0, (safeInnerHeight / 2) - (windowSize.height / 2));
+      
+      windowPosition = { x: centerX, y: centerY };
+      
+      debugLog("Initial centered position:", windowPosition);
+      
+      // Check for position collisions and adjust if needed
+      windowPosition = findNonOverlappingPosition(
+        windowPosition, 
+        windowSize, 
+        openWindows
+      );
+      
+      debugLog("Final position after collision detection:", windowPosition);
+    } else {
+      debugLog("Using provided position:", windowPosition);
     }
-
+    
     // Increment z-index for the new window
     const newZIndex = lastZIndex + 1;
+    debugLog("New z-index:", newZIndex);
+    
     set({ lastZIndex: newZIndex });
 
     const newWindow: WindowState = {
@@ -145,12 +258,14 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
       size: windowSize,
       state: "normal",
       zIndex: newZIndex,
-      props, // Assign the highest z-index
+      props,
       navigation: {
         history: [],
         currentIndex: -1,
       },
     };
+    
+    debugLog("Adding new window to state:", newWindow);
 
     set((state) => ({
       openWindows: [...state.openWindows, newWindow],
@@ -163,7 +278,7 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
         component === "projects-list" ||
         component === "blog-list")
     ) {
-      // We can use setTimeout to ensure the window is added to state first
+      debugLog("Window supports navigation, initializing...");
       setTimeout(() => {
         get().initializeWindowNavigation(id, props);
       }, 0);
@@ -171,28 +286,23 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
   },
 
   closeWindow: (id) => {
+    debugLog("Closing window:", id);
     set((state) => ({
       openWindows: state.openWindows.filter((win) => win.id !== id),
     }));
-    // Optional: Reset offset if no windows are open?
-    if (get().openWindows.length === 1) {
-      // Checking length *after* filter means 0 left
-      set({ nextDefaultPositionOffset: 0 });
-    }
   },
 
   minimizeWindow: (id) => {
+    debugLog("Minimizing window:", id);
     set((state) => ({
       openWindows: state.openWindows.map((win) =>
         win.id === id ? { ...win, state: "minimized" } : win
       ),
-      // Note: Minimizing usually doesn't change z-index relative to others,
-      // but bringing another window to front later will.
     }));
   },
 
   maximizeWindow: (id) => {
-    // Store pre-maximize state if needed here before changing state
+    debugLog("Maximizing window:", id);
     const { lastZIndex } = get();
     const newZIndex = lastZIndex + 1;
     set((state) => ({
@@ -201,7 +311,7 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
           ? {
               ...win,
               state: "maximized",
-              zIndex: newZIndex, // Bring to front when maximizing
+              zIndex: newZIndex,
             }
           : win
       ),
@@ -209,25 +319,28 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
     }));
   },
 
-  // --- RESTORE FUNCTION (Crucial for the logic) ---
   restoreWindow: (id) => {
+    debugLog("Restoring window:", id);
     set((state) => {
       const windowToRestore = state.openWindows.find((w) => w.id === id);
-      if (!windowToRestore) return state;
+      if (!windowToRestore) {
+        debugLog("Window not found for restore:", id);
+        return state;
+      }
 
-      // Create a new window object with state set to normal
-      // and using prevPosition/prevSize if available
+      debugLog("Current window state:", windowToRestore);
+      debugLog("Restore position:", windowToRestore.prevPosition || windowToRestore.position);
+      debugLog("Restore size:", windowToRestore.prevSize || windowToRestore.size);
+
       const restoredWindow = {
         ...windowToRestore,
         state: "normal" as const,
         position: windowToRestore.prevPosition || windowToRestore.position,
         size: windowToRestore.prevSize || windowToRestore.size,
-        // Clear prev values
         prevPosition: undefined,
         prevSize: undefined,
       };
 
-      // Update all windows
       return {
         openWindows: state.openWindows.map((w) =>
           w.id === id ? restoredWindow : w
@@ -239,32 +352,40 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
     get().bringWindowToFront(id);
   },
 
-  // --- BRING TO FRONT FUNCTION (Used by openWindow and others) ---
   bringWindowToFront: (id) => {
-    // Only bring to front if it's not already the top-most window
     const currentWindow = get().openWindows.find((win) => win.id === id);
     const { lastZIndex } = get();
 
-    if (currentWindow && currentWindow.zIndex <= lastZIndex) {
+    if (!currentWindow) {
+      debugLog("Window not found for bringing to front:", id);
+      return;
+    }
+
+    debugLog("Current window z-index:", currentWindow.zIndex, "last z-index:", lastZIndex);
+
+    if (currentWindow.zIndex <= lastZIndex) {
       const newZIndex = lastZIndex + 1;
+      debugLog("Bringing window to front with new z-index:", newZIndex);
+      
       set((state) => ({
         openWindows: state.openWindows.map((win) =>
           win.id === id ? { ...win, zIndex: newZIndex } : win
         ),
         lastZIndex: newZIndex,
       }));
+    } else {
+      debugLog("Window already at front, no action needed");
     }
   },
 
-  // --- UPDATE POSITION/SIZE (Needed by react-rnd handlers) ---
   updateWindowPosition: (id, position) => {
+    debugLog("Updating window position:", id, position);
     set((state) => ({
       openWindows: state.openWindows.map((window) =>
         window.id === id
           ? {
               ...window,
               position,
-              // Store the new position even if maximized (for restore)
               ...(window.state === "maximized"
                 ? { prevPosition: position }
                 : {}),
@@ -272,54 +393,47 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
           : window
       ),
     }));
-
-    // Log for debugging
-    console.log(`Position updated for window ${id}:`, position);
   },
 
   updateWindowSize: (id, size) => {
+    debugLog("Updating window size:", id, size);
     set((state) => ({
       openWindows: state.openWindows.map((window) =>
         window.id === id
           ? {
               ...window,
               size,
-              // Store the new size even if maximized (for restore)
               ...(window.state === "maximized" ? { prevSize: size } : {}),
             }
           : window
       ),
     }));
-
-    // Log for debugging
-    console.log(`Size updated for window ${id}:`, size);
   },
 
-  // --- UPDATE WINDOW TITLE ---
   updateWindowTitle: (id, title) => {
+    debugLog("Updating window title:", id, title);
     set((state) => ({
       openWindows: state.openWindows.map((window) =>
-        window.id === id
-          ? {
-              ...window,
-              title,
-            }
-          : window
+        window.id === id ? { ...window, title } : window
       ),
     }));
-
-    console.log(`Title updated for window ${id}:`, title);
   },
 
-  // --- NAVIGATION FUNCTIONS ---
-
-  // Initialize window navigation state
+  // Navigation functions
   initializeWindowNavigation: (id, initialData) => {
-    if (!initialData) return;
+    if (!initialData) {
+      debugLog("No initial data for navigation, skipping initialization");
+      return;
+    }
+
+    debugLog("Initializing window navigation:", id, "with data:", initialData);
 
     set((state) => {
       const windowToUpdate = state.openWindows.find((w) => w.id === id);
-      if (!windowToUpdate) return state;
+      if (!windowToUpdate) {
+        debugLog("Window not found for navigation initialization:", id);
+        return state;
+      }
 
       return {
         openWindows: state.openWindows.map((window) =>
@@ -335,29 +449,32 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
         ),
       };
     });
-
-    console.log(`Navigation initialized for window ${id}`);
+    
+    // Log the updated state
+    const updatedWindow = get().openWindows.find(w => w.id === id);
+    debugLog("Navigation initialized, window state:", updatedWindow);
   },
 
-  // Navigate to a new state (adds to history)
   navigateWindowTo: (id, data) => {
+    debugLog("Navigating window to new state:", id, data);
+    
     set((state) => {
       const windowToUpdate = state.openWindows.find((w) => w.id === id);
-      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+      if (!windowToUpdate || !windowToUpdate.navigation) {
+        debugLog("Window not found or has no navigation state:", id);
+        return state;
+      }
 
       const { navigation } = windowToUpdate;
+      debugLog("Current navigation state:", navigation);
 
-      // Create new history array by cutting off any forward history and adding new entry
       const newHistory = [
         ...navigation.history.slice(0, navigation.currentIndex + 1),
         data,
       ];
+      
+      debugLog("New history:", newHistory, "new index:", newHistory.length - 1);
 
-      // Log for debugging
-      console.log("Navigating to new state:", data);
-      console.log("New history:", newHistory);
-
-      // Update navigation state and props
       return {
         openWindows: state.openWindows.map((window) =>
           window.id === id
@@ -374,28 +491,35 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
         ),
       };
     });
-
-    console.log(`Navigated to new state in window ${id}`);
+    
+    // Log the updated state
+    const updatedWindow = get().openWindows.find(w => w.id === id);
+    debugLog("After navigation, window state:", updatedWindow);
   },
 
-  // Navigate back
   navigateWindowBack: (id) => {
+    debugLog("Attempting to navigate back:", id);
+    
     set((state) => {
       const windowToUpdate = state.openWindows.find((w) => w.id === id);
-      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+      if (!windowToUpdate || !windowToUpdate.navigation) {
+        debugLog("Window not found or has no navigation state:", id);
+        return state;
+      }
 
       const { navigation } = windowToUpdate;
+      debugLog("Current navigation state:", navigation);
+      
+      if (navigation.currentIndex <= 0) {
+        debugLog("Already at beginning of history, cannot go back");
+        return state;
+      }
 
-      // Check if we can navigate back
-      if (navigation.currentIndex <= 0) return state;
-
-      // Decrement index
       const newIndex = navigation.currentIndex - 1;
-
-      // Get the previous data
       const previousData = navigation.history[newIndex];
+      
+      debugLog("New index:", newIndex, "previous data:", previousData);
 
-      // Update window props with the previous data
       return {
         openWindows: state.openWindows.map((window) =>
           window.id === id
@@ -405,51 +529,6 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
                   ...navigation,
                   currentIndex: newIndex,
                 },
-                props: {
-                  ...window.props,
-                  ...previousData,
-                },
-                title: previousData.title || window.title,
-              }
-            : window
-        ),
-      };
-    });
-
-    console.log(`Navigated back in window ${id}`);
-  }, // Updated navigation functions in windowsStore.ts
-
-  // Navigate back
-  navigateWindowBack: (id) => {
-    set((state) => {
-      const windowToUpdate = state.openWindows.find((w) => w.id === id);
-      if (!windowToUpdate || !windowToUpdate.navigation) return state;
-
-      const { navigation } = windowToUpdate;
-
-      // Check if we can navigate back
-      if (navigation.currentIndex <= 0) return state;
-
-      // Decrement index
-      const newIndex = navigation.currentIndex - 1;
-
-      // Get the previous data
-      const previousData = navigation.history[newIndex];
-
-      // Log for debugging
-      console.log("Navigating back to:", previousData);
-
-      // Update window props and title
-      return {
-        openWindows: state.openWindows.map((window) =>
-          window.id === id
-            ? {
-                ...window,
-                navigation: {
-                  ...navigation,
-                  currentIndex: newIndex,
-                },
-                // Replace entire props object to ensure component gets new props
                 props: previousData,
                 title: previousData.title || window.title,
               }
@@ -457,32 +536,35 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
         ),
       };
     });
-
-    console.log(`Navigated back in window ${id}`);
+    
+    // Log the updated state
+    const updatedWindow = get().openWindows.find(w => w.id === id);
+    debugLog("After navigate back, window state:", updatedWindow);
   },
 
-  // Navigate forward
   navigateWindowForward: (id) => {
+    debugLog("Attempting to navigate forward:", id);
+    
     set((state) => {
       const windowToUpdate = state.openWindows.find((w) => w.id === id);
-      if (!windowToUpdate || !windowToUpdate.navigation) return state;
+      if (!windowToUpdate || !windowToUpdate.navigation) {
+        debugLog("Window not found or has no navigation state:", id);
+        return state;
+      }
 
       const { navigation } = windowToUpdate;
-
-      // Check if we can navigate forward
-      if (navigation.currentIndex >= navigation.history.length - 1)
+      debugLog("Current navigation state:", navigation);
+      
+      if (navigation.currentIndex >= navigation.history.length - 1) {
+        debugLog("Already at end of history, cannot go forward");
         return state;
+      }
 
-      // Increment index
       const newIndex = navigation.currentIndex + 1;
-
-      // Get the next data
       const nextData = navigation.history[newIndex];
+      
+      debugLog("New index:", newIndex, "next data:", nextData);
 
-      // Log for debugging
-      console.log("Navigating forward to:", nextData);
-
-      // Update window props and title
       return {
         openWindows: state.openWindows.map((window) =>
           window.id === id
@@ -492,7 +574,6 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
                   ...navigation,
                   currentIndex: newIndex,
                 },
-                // Replace entire props object to ensure component gets new props
                 props: nextData,
                 title: nextData.title || window.title,
               }
@@ -500,27 +581,36 @@ const useWindowsStore = create<WindowsStoreState>((set, get) => ({
         ),
       };
     });
-
-    console.log(`Navigated forward in window ${id}`);
+    
+    // Log the updated state
+    const updatedWindow = get().openWindows.find(w => w.id === id);
+    debugLog("After navigate forward, window state:", updatedWindow);
   },
 
-  // Check if can navigate back
   canNavigateBack: (id) => {
     const windowToCheck = get().openWindows.find((w) => w.id === id);
-    if (!windowToCheck || !windowToCheck.navigation) return false;
-
-    return windowToCheck.navigation.currentIndex > 0;
+    if (!windowToCheck || !windowToCheck.navigation) {
+      debugLog("canNavigateBack: Window not found or has no navigation state:", id);
+      return false;
+    }
+    
+    const result = windowToCheck.navigation.currentIndex > 0;
+    debugLog("canNavigateBack:", id, "result:", result, "current index:", windowToCheck.navigation.currentIndex);
+    return result;
   },
 
-  // Check if can navigate forward
   canNavigateForward: (id) => {
     const windowToCheck = get().openWindows.find((w) => w.id === id);
-    if (!windowToCheck || !windowToCheck.navigation) return false;
-
-    return (
-      windowToCheck.navigation.currentIndex <
-      windowToCheck.navigation.history.length - 1
-    );
+    if (!windowToCheck || !windowToCheck.navigation) {
+      debugLog("canNavigateForward: Window not found or has no navigation state:", id);
+      return false;
+    }
+    
+    const result = windowToCheck.navigation.currentIndex < windowToCheck.navigation.history.length - 1;
+    debugLog("canNavigateForward:", id, "result:", result, 
+      "current index:", windowToCheck.navigation.currentIndex,
+      "history length:", windowToCheck.navigation.history.length);
+    return result;
   },
 }));
 

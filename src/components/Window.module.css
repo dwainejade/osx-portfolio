@@ -224,8 +224,8 @@
 .maximized {
   width: calc(100% - 2px) !important;
   height: calc(
-    100% - 76px
-  ) !important; /* Account for dock height and padding */
+    100% - 76px - 24px
+  ) !important; /* Account for dock height and padding and top menu height */
   top: 0.5px !important;
   left: 1px !important;
 }

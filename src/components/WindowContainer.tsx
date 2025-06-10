@@ -157,24 +157,14 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
   // --- Navigation Actions ---
 
   const handleNavigateBack = () => {
-    console.log(`Attempting to navigate back for window ${id}`);
-
-    // Check if navigation is possible first
     if (canNavigateBack) {
       navigateWindowBack(id);
-    } else {
-      console.log(`Cannot navigate back for window ${id}`);
     }
   };
 
   const handleNavigateForward = () => {
-    console.log(`Attempting to navigate forward for window ${id}`);
-
-    // Check if navigation is possible first
     if (canNavigateForward) {
       navigateWindowForward(id);
-    } else {
-      console.log(`Cannot navigate forward for window ${id}`);
     }
   };
 
@@ -236,6 +226,9 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
       : { transition: "all 300ms cubic-bezier(0.2, 0, 0, 1)" }),
   };
 
+  // Determine if we should show the navigation buttons
+  const showNavigation = canNavigateBack || canNavigateForward;
+
   return (
     <Rnd
       {...rndConfig}
@@ -248,54 +241,64 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
     >
       {/* Title Bar */}
       <div className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}>
-        <div className={styles.windowControls}>
-          <div
-            className={`${styles.controlButton} ${styles.closeButton}`}
-            onClick={() => closeWindow(id)}
-            onMouseDown={(e) => e.stopPropagation()}
-          />
-          <div
-            className={`${styles.controlButton} ${styles.minimizeButton}`}
-            onClick={() => minimizeWindow(id)}
-            onMouseDown={(e) => e.stopPropagation()}
-          />
-          <div
-            className={`${styles.controlButton} ${styles.maximizeButton}`}
-            onClick={greenButtonAction}
-            style={{
-              backgroundColor:
-                currentState === "maximized" ? "#00a03f" : "#00ca4e",
-            }}
-            onMouseDown={(e) => e.stopPropagation()}
-          />
+        <div className={styles.leftSection}>
+          {/* Window Controls */}
+          <div className={styles.windowControls}>
+            <div
+              className={`${styles.controlButton} ${styles.closeButton}`}
+              onClick={() => closeWindow(id)}
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+            <div
+              className={`${styles.controlButton} ${styles.minimizeButton}`}
+              onClick={() => minimizeWindow(id)}
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+            <div
+              className={`${styles.controlButton} ${styles.maximizeButton}`}
+              onClick={greenButtonAction}
+              style={{
+                backgroundColor:
+                  currentState === "maximized" ? "#00a03f" : "#00ca4e",
+              }}
+              onMouseDown={(e) => e.stopPropagation()}
+            />
+          </div>
+
+          {/* Navigation Buttons - Only show if navigation is possible */}
+          {showNavigation && (
+            <div className={styles.navigationButtons}>
+              <button
+                className={`${styles.navButton} ${
+                  !canNavigateBack ? styles.navButtonDisabled : ""
+                }`}
+                onClick={handleNavigateBack}
+                disabled={!canNavigateBack}
+                onMouseDown={(e) => e.stopPropagation()}
+                title="Back"
+              >
+                ‹
+              </button>
+              <button
+                className={`${styles.navButton} ${
+                  !canNavigateForward ? styles.navButtonDisabled : ""
+                }`}
+                onClick={handleNavigateForward}
+                disabled={!canNavigateForward}
+                onMouseDown={(e) => e.stopPropagation()}
+                title="Forward"
+              >
+                ›
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Navigation Buttons */}
-        <div className={styles.navigationButtons}>
-          <button
-            className={`${styles.navButton} ${
-              !canNavigateBack ? styles.navButtonDisabled : ""
-            }`}
-            onClick={handleNavigateBack}
-            disabled={!canNavigateBack}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            ‹
-          </button>
-          <button
-            className={`${styles.navButton} ${
-              !canNavigateForward ? styles.navButtonDisabled : ""
-            }`}
-            onClick={handleNavigateForward}
-            disabled={!canNavigateForward}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            ›
-          </button>
-        </div>
-
-        {/* Window Title */}
+        {/* Window Title - Centered */}
         <span className={styles.windowTitle}>{title}</span>
+
+        {/* Right side spacer to balance the title */}
+        <div className={styles.rightSection}></div>
       </div>
 
       {/* Content Area */}
