@@ -1,4 +1,3 @@
-/* src/components/Window.module.css */
 .window {
   background-color: #f0f0f0;
   border-radius: 8px;
@@ -6,41 +5,47 @@
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  /* min dimensions */
   min-width: 300px;
   min-height: 200px;
-  /* height: 100%; */
   /* Optimize for performance */
   will-change: transform, width, height;
-  /* Apply hardware acceleration */
   transform: translateZ(0);
   border: solid 1px rgba(0, 0, 0, 0.2);
 }
 
-.titleBar {
-  height: 34px;
-  background-color: #e0e0e0;
-  border-bottom: 1px solid #d0d0d0;
+.topControlsBar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 40px;
+  width: 100%;
+  background-color: transparent;
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  /* cursor: grab; */
   user-select: none;
   -webkit-user-select: none;
   flex-shrink: 0;
+  z-index: 1;
+  padding: 2%;
 }
 
 .windowControls {
   display: flex;
-  gap: 8px;
-  z-index: 10; /* Ensure buttons are clickable */
+  /* gap: 8px; */
+  align-items: center;
+  justify-content: space-evenly;
+  z-index: 1;
+  border: solid 1px rgba(0, 0, 0, 0.5);
+  background-color: transparent;
+  height: 30px;
+  width: 80px;
+  border-radius: 50px;
 }
 
 .controlButton {
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  /* cursor: pointer; */
   transition: background-color 0.1s ease;
 }
 
@@ -62,7 +67,7 @@
   background-color: #00ca4e;
 }
 .maximizeButton:hover {
-  background-color: #00a03f; /* Darker green */
+  background-color: #00a03f;
 }
 
 /* Navigation Buttons */
@@ -114,14 +119,14 @@
 
 .windowContent {
   /* padding: 15px; */
-  background-color: #fefefe;
+  background-color: transparent;
   color: #333;
 }
 
 .contentWrapper {
   flex-grow: 1;
   overflow: auto;
-  background-color: #fefefe;
+  background-color: transparent;
   /* Optimize scrolling performance */
   -webkit-overflow-scrolling: touch;
   will-change: transform;
@@ -242,7 +247,7 @@
 /* Styles for the minimizing animation */
 .minimizingWindow {
   position: absolute;
-  background-color: #f0f0f0;
+  background-color: transparent;
   border-radius: 8px;
   overflow: hidden;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -261,4 +266,14 @@
 :global(.react-resizable-resizing) {
   transition: none !important;
   will-change: width, height;
+}
+
+.glassmorphic {
+  /* From https://css.glass */
+  background: rgba(255, 255, 255, 0.51);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(7.4px);
+  -webkit-backdrop-filter: blur(7.4px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
 }

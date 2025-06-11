@@ -1,15 +1,16 @@
 /* src/components/windows/ContentListWindow.module.css */
 .contentListWindow {
   padding: 1.5rem;
+  padding-top: 3rem;
   height: 100%;
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; */
   overflow-y: auto;
 }
 
 .contentDetailView {
   padding: 1.5rem;
   height: 100%;
-  background-color: #f9f9f9;
+  /* background-color: #f9f9f9; */
   overflow-y: auto;
 }
 

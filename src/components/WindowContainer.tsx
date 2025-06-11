@@ -235,15 +235,15 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
       style={containerStyle}
       className={`${styles.window} ${
         currentState === "maximized" ? styles.maximized : ""
-      }`}
+      } ${styles.glassmorphic}`}
       onMouseDownCapture={handleMouseDownCapture}
       cancel={`.${styles.controlButton}, .${styles.navButton}`} // Don't initiate drag from buttons
     >
       {/* Title Bar */}
-      <div className={`${styles.titleBar} ${DRAG_HANDLE_CLASS}`}>
+      <div className={`${styles.topControlsBar} ${DRAG_HANDLE_CLASS}`}>
         <div className={styles.leftSection}>
           {/* Window Controls */}
-          <div className={styles.windowControls}>
+          <div className={`${styles.windowControls} ${styles.glassmorphic}`}>
             <div
               className={`${styles.controlButton} ${styles.closeButton}`}
               onClick={() => closeWindow(id)}
@@ -295,7 +295,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
         </div>
 
         {/* Window Title - Centered */}
-        <span className={styles.windowTitle}>{title}</span>
+        {/* <span className={styles.windowTitle}>{title}</span> */}
 
         {/* Right side spacer to balance the title */}
         <div className={styles.rightSection}></div>
@@ -307,7 +307,7 @@ const WindowContainer: React.FC<WindowContainerProps> = ({
         style={{
           overflowY: "auto",
           overflowX: "hidden",
-          height: "calc(100% - 24px)",
+          height: "calc(100%)",
           color: "#333",
         }}
       >
